@@ -8,6 +8,7 @@ const state = {
 
 const el = {
   versionLabel: document.querySelector("#versionLabel"),
+  appNameTitle: document.querySelector("#appNameTitle"),
   dataPath: document.querySelector("#dataPath"),
   taskForm: document.querySelector("#taskForm"),
   taskTitle: document.querySelector("#taskTitle"),
@@ -48,6 +49,14 @@ const el = {
   openDataFolder: document.querySelector("#openDataFolder"),
   exportData: document.querySelector("#exportData"),
   importData: document.querySelector("#importData"),
+  openSettings: document.querySelector("#openSettings"),
+  settingsDialog: document.querySelector("#settingsDialog"),
+  closeSettings: document.querySelector("#closeSettings"),
+  cancelSettings: document.querySelector("#cancelSettings"),
+  saveSettings: document.querySelector("#saveSettings"),
+  chooseDataDir: document.querySelector("#chooseDataDir"),
+  settingAppName: document.querySelector("#settingAppName"),
+  settingDataDir: document.querySelector("#settingDataDir"),
 };
 
 const priorityText = { high: "紧急", normal: "普通", low: "稍后" };
@@ -99,6 +108,11 @@ function bindEvents() {
   el.openDataFolder.addEventListener("click", () => window.daheTodo.openDataFolder());
   el.exportData.addEventListener("click", () => window.daheTodo.exportData());
   el.importData.addEventListener("click", importData);
+  el.openSettings.addEventListener("click", openSettings);
+  el.closeSettings.addEventListener("click", closeSettings);
+  el.cancelSettings.addEventListener("click", closeSettings);
+  el.chooseDataDir.addEventListener("click", chooseDataDir);
+  el.saveSettings.addEventListener("click", saveSettings);
 }
 
 async function save() {
@@ -173,6 +187,8 @@ async function importData() {
 
 function render() {
   el.versionLabel.textContent = `桌面端 · ${state.info.version}`;
+  el.appNameTitle.textContent = state.info.appName;
+  document.title = state.info.appName;
   el.dataPath.textContent = state.info.dataFile;
   renderCounts();
   renderTags();
@@ -180,6 +196,34 @@ function render() {
   renderList();
   renderDetail();
   renderReport();
+}
+
+function openSettings() {
+  el.settingAppName.value = state.info.appName;
+  el.settingDataDir.value = state.info.dataDir;
+  el.settingsDialog.showModal();
+}
+
+function closeSettings() {
+  el.settingsDialog.close();
+}
+
+async function chooseDataDir() {
+  const dir = await window.daheTodo.chooseDataDir();
+  if (!dir) return;
+  el.settingDataDir.value = dir;
+}
+
+async function saveSettings() {
+  const appName = el.settingAppName.value.trim();
+  const dataDir = el.settingDataDir.value.trim();
+  if (!appName || !dataDir) {
+    alert("项目名称和数据保存位置都不能为空。");
+    return;
+  }
+  state.info = await window.daheTodo.saveSettings({ appName, dataDir }, state.tasks);
+  closeSettings();
+  render();
 }
 
 function renderCounts() {

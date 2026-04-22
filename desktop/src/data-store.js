@@ -2,8 +2,8 @@ const fs = require("fs");
 const path = require("path");
 
 function createDataStore(options) {
-  const dataDir = options.dataDir;
-  const dataFile = path.join(dataDir, "tasks.json");
+  let dataDir = options.dataDir;
+  let dataFile = path.join(dataDir, "tasks.json");
   const legacyFiles = [options.legacyFile, ...(options.legacyFiles || [])].filter(Boolean);
 
   function ensure() {
@@ -51,7 +51,20 @@ function createDataStore(options) {
     return filePath;
   }
 
-  return { dataDir, dataFile, ensure, load, save, importFrom, exportTo };
+  function setDataDir(nextDataDir, tasksToCarry) {
+    const tasks = Array.isArray(tasksToCarry) ? tasksToCarry : load();
+    dataDir = nextDataDir;
+    dataFile = path.join(dataDir, "tasks.json");
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(dataFile, JSON.stringify(tasks, null, 2), "utf8");
+    return { dataDir, dataFile, count: tasks.length };
+  }
+
+  function info() {
+    return { dataDir, dataFile };
+  }
+
+  return { ensure, load, save, importFrom, exportTo, setDataDir, info };
 }
 
 function readJsonArray(filePath) {

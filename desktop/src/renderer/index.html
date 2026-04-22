@@ -11,9 +11,10 @@
       <header class="titlebar">
         <div>
           <div class="eyebrow" id="versionLabel">桌面端</div>
-          <h1>大何的待办事项</h1>
+          <h1 id="appNameTitle">大何的待办事项</h1>
         </div>
         <div class="header-actions">
+          <button id="openSettings" class="quiet-button" type="button">设置</button>
           <button id="openDataFolder" class="quiet-button" type="button">数据文件夹</button>
           <button id="exportData" class="quiet-button" type="button">导出</button>
           <button id="importData" class="quiet-button" type="button">导入</button>
@@ -145,6 +146,35 @@
         </section>
       </section>
     </main>
+
+    <dialog id="settingsDialog" class="settings-dialog">
+      <form method="dialog" class="settings-card">
+        <div class="settings-head">
+          <div>
+            <h2>应用设置</h2>
+            <p>名称和数据保存位置都会保存在本机配置里。</p>
+          </div>
+          <button id="closeSettings" class="icon-button" type="button" aria-label="关闭设置">×</button>
+        </div>
+        <label>
+          <span>项目名称</span>
+          <input id="settingAppName" type="text" autocomplete="off" />
+        </label>
+        <label>
+          <span>数据保存位置</span>
+          <div class="path-picker">
+            <input id="settingDataDir" type="text" readonly />
+            <button id="chooseDataDir" class="quiet-button" type="button">选择</button>
+          </div>
+        </label>
+        <p class="settings-note">更改保存位置时，会把当前事项写入新位置的 `tasks.json`。</p>
+        <div class="settings-actions">
+          <button id="cancelSettings" class="quiet-button" type="button">取消</button>
+          <button id="saveSettings" class="primary-button" type="button">保存设置</button>
+        </div>
+      </form>
+    </dialog>
+
     <script src="app.js"></script>
   </body>
 </html>

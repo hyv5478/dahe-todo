@@ -31,3 +31,13 @@ New desktop application built with Electron.
 - Uses a three-pane desktop layout: navigation, task list, task detail/comments
 - Saves data to `Documents/DaheTodo/tasks.json`
 - Migrates existing browser-version tasks from `data/tasks.json` when desktop data is empty
+
+## v0.3.1-desktop-settings
+
+Desktop configuration pass.
+
+- Replaced Electron default English menu with Chinese menu labels
+- Added app settings dialog
+- App title/project name is configurable
+- Data storage folder is configurable
+- Settings persist in Electron user data config

@@ -7,7 +7,7 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "check": "node --check src/main.js && node --check src/preload.js && node --check src/data-store.js && node --check src/renderer/app.js && node tests/data-store.test.js",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/data-store.js && node --check src/config-store.js && node --check src/renderer/app.js && node tests/data-store.test.js && node tests/config-store.test.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder --win nsis"
   },

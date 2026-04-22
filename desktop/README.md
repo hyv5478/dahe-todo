@@ -1,6 +1,6 @@
 # 大何的待办事项桌面端
 
-版本：`v0.3.0-desktop-alpha`
+版本：`v0.3.1-desktop-settings`
 
 ## 开发启动
 
@@ -41,3 +41,12 @@ desktop/release/win-unpacked/大何的待办事项.exe
 ```
 
 如果这个文件为空，桌面端启动时会尝试从浏览器版的 `data/tasks.json` 迁移已有事项。
+
+## 设置
+
+点击右上角“设置”可以修改：
+
+- 项目名称
+- 数据保存位置
+
+保存位置变化时，当前事项会写入新目录下的 `tasks.json`。
