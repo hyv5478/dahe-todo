@@ -49,7 +49,7 @@ npm.cmd run dist
 打包输出：
 
 ```text
-desktop/release/大何的待办事项 Setup 0.3.0.exe
+desktop/release/大何的待办事项 Setup 0.3.1.exe
 ```
 
 ## 数据位置

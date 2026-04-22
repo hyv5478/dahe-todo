@@ -23,7 +23,7 @@ npm.cmd run dist
 安装包输出：
 
 ```text
-desktop/release/大何的待办事项 Setup 0.3.0.exe
+desktop/release/大何的待办事项 Setup 0.3.1.exe
 ```
 
 免安装可执行文件：
