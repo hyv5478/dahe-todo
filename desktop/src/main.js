@@ -3,7 +3,7 @@ const path = require("path");
 const { createDataStore } = require("./data-store");
 const { createConfigStore } = require("./config-store");
 
-const APP_VERSION = "v0.4.0-focus-timer";
+const APP_VERSION = "v0.4.1-focus-completion";
 
 let mainWindow;
 let store;

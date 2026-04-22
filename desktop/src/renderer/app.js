@@ -105,7 +105,7 @@ const legacyPriorityMap = {
   low: "not-important-not-urgent",
 };
 
-const focusDoneStatuses = new Set(["break-ready", "completed", "break-skipped"]);
+const focusDoneStatuses = new Set(["break-ready", "completed", "break-skipped", "task-completed"]);
 const focusOpenStatuses = new Set(["focus-running", "break-ready", "break-running"]);
 
 init();
@@ -215,15 +215,38 @@ function addTask() {
 function toggleSelectedDone() {
   const task = selectedTask();
   if (!task) return;
-  const active = activeFocusSession();
-  if (active && active.taskId === task.id && focusOpenStatuses.has(active.status)) {
-    alert("当前任务还有一轮番茄没有收尾，先完成或放弃本轮。");
-    return;
+  if (!task.completedAt) {
+    settleFocusForCompletedTask(task);
   }
   task.completedAt = task.completedAt ? null : new Date().toISOString();
   if (task.completedAt) state.view = "history";
   saveTasks();
   render();
+}
+
+function settleFocusForCompletedTask(task) {
+  const session = activeFocusSession();
+  if (!session || session.taskId !== task.id) return;
+  const now = new Date().toISOString();
+  if (session.status === "focus-running") {
+    session.status = "task-completed";
+    session.focusEndedAt = now;
+    session.breakEndedAt = now;
+    state.activeFocusId = null;
+    window.daheTodo.notifyFocusEnded({
+      title: "任务已完成",
+      body: `「${session.taskTitleSnapshot}」已完成，本轮番茄已自动收尾。`,
+    });
+  } else if (session.status === "break-ready") {
+    session.status = "break-skipped";
+    session.breakEndedAt = now;
+    state.activeFocusId = null;
+  } else if (session.status === "break-running") {
+    session.status = "completed";
+    session.breakEndedAt = now;
+    state.activeFocusId = null;
+  }
+  saveFocusSessions();
 }
 
 function deleteSelectedTask() {
@@ -815,7 +838,7 @@ function normalizeFocusSession(session) {
     breakStartedAt: session.breakStartedAt || null,
     breakEndsAt: session.breakEndsAt || null,
     breakEndedAt: session.breakEndedAt || null,
-    status: ["focus-running", "break-ready", "break-running", "completed", "break-skipped", "interrupted"].includes(session.status) ? session.status : "completed",
+    status: ["focus-running", "break-ready", "break-running", "completed", "break-skipped", "task-completed", "interrupted"].includes(session.status) ? session.status : "completed",
     interruptReason: session.interruptReason || null,
   };
 }

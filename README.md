@@ -21,7 +21,7 @@
 
 ## 当前版本
 
-- 桌面端版本：`v0.4.0-focus-timer`
+- 桌面端版本：`v0.4.1-focus-completion`
 - Windows 安装包见 GitHub Releases。
 
 ## 桌面端开发
@@ -57,7 +57,7 @@ npm.cmd run dist
 安装包输出：
 
 ```text
-desktop/release/大何的待办事项 Setup 0.4.0.exe
+desktop/release/大何的待办事项 Setup 0.4.1.exe
 ```
 
 ## 本地数据

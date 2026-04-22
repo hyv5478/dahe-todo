@@ -60,3 +60,11 @@ Desktop focus timer pass.
 - Added global focus bar, detail-panel focus ring, break flow, and interruption reasons
 - Added today Pomodoro count and weekly report focus summary
 - Export/import now carries both tasks and focus sessions
+
+## v0.4.1-focus-completion
+
+Focus timer completion fix.
+
+- Completing a task during an active Pomodoro no longer blocks the user
+- Active focus sessions are automatically settled as `task-completed`
+- The completed Pomodoro remains counted in today and report statistics

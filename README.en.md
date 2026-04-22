@@ -21,7 +21,7 @@ Website: [https://hyv5478.github.io/dahe-todo/](https://hyv5478.github.io/dahe-t
 
 ## Current Version
 
-- Desktop version: `v0.4.0-focus-timer`
+- Desktop version: `v0.4.1-focus-completion`
 - Windows installer is available from GitHub Releases.
 
 ## Desktop Development
@@ -57,7 +57,7 @@ npm.cmd run dist
 Installer output:
 
 ```text
-desktop/release/大何的待办事项 Setup 0.4.0.exe
+desktop/release/大何的待办事项 Setup 0.4.1.exe
 ```
 
 ## Local Data

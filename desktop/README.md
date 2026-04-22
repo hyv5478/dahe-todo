@@ -1,6 +1,6 @@
 # 大何的待办事项桌面端
 
-当前版本：`v0.4.0-focus-timer`
+当前版本：`v0.4.1-focus-completion`
 
 ## 启动
 
@@ -23,7 +23,7 @@ npm.cmd run dist
 安装包输出：
 
 ```text
-desktop/release/大何的待办事项 Setup 0.4.0.exe
+desktop/release/大何的待办事项 Setup 0.4.1.exe
 ```
 
 免安装版本：
