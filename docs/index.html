@@ -4,7 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>大何的待办事项</title>
-    <meta name="description" content="本地优先的 Windows 桌面待办工具，适合大量琐碎事项、完成评论和周报素材整理。" />
+    <meta
+      name="description"
+      content="本地优先的 Windows 待办工具，适合大量琐碎事项、临时插入任务、完成评论和周报素材整理。"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -15,19 +18,24 @@
           <a href="#features">功能</a>
           <a href="#desktop">桌面端</a>
           <a href="#privacy">本地存储</a>
+          <a href="#english">English</a>
           <a href="#start">开始使用</a>
         </div>
       </nav>
+
       <div class="hero-grid">
         <section class="hero-copy">
-          <p class="eyebrow">Windows 本地优先 · 桌面待办 · 周报素材</p>
+          <p class="eyebrow">Windows 本地待办 · 桌面软件 · 周报素材</p>
           <h1>把突然插进来的琐事，稳稳接住。</h1>
-          <p class="lead">一个给高频事务场景做的待办工具：快速记录、打钩完成、追加过程评论、按周/月回看，并把完成记录整理成周报素材。</p>
+          <p class="lead">
+            一个轻量的本地待办工具：随手记录、完成打钩、追加评论、按时间和优先级回看，最后把完成过程整理成周报素材。
+          </p>
           <div class="hero-actions">
-            <a class="primary-link" href="#start">下载安装包</a>
+            <a class="primary-link" href="#start">下载桌面版</a>
             <a class="secondary-link" href="https://github.com/hyv5478/dahe-todo" target="_blank" rel="noreferrer">查看 GitHub</a>
           </div>
         </section>
+
         <figure class="preview-frame">
           <img src="assets/desktop-preview.svg" alt="大何的待办事项桌面端界面预览" />
         </figure>
@@ -37,52 +45,64 @@
     <main>
       <section id="features" class="section">
         <div class="section-head">
-          <p class="eyebrow">Features</p>
-          <h2>为真实工作流设计</h2>
+          <p class="eyebrow">核心功能</p>
+          <h2>为琐碎、插队、容易忘的工作流设计。</h2>
         </div>
         <div class="feature-grid">
           <article>
-            <h3>随手记录</h3>
-            <p>事情一来先落地，不靠脑子硬记。支持补充说明、分组和优先级。</p>
+            <h3>快速收集</h3>
+            <p>事情冒出来时先记下来，不要求你立刻想清楚结构，降低打断当前工作的成本。</p>
           </article>
           <article>
-            <h3>完成评论</h3>
-            <p>一件事可以追加多条评论，保留时间线，也能修改旧评论。</p>
+            <h3>完成后追加评论</h3>
+            <p>办完后可以多次补充过程、结果、原因和影响，后续整理周报时不用重新翻记忆。</p>
           </article>
           <article>
-            <h3>全局搜索</h3>
-            <p>标题、说明、分组、评论都能搜，事项多了也能快速翻出来。</p>
+            <h3>优先级四象限</h3>
+            <p>支持重要紧急、重要不紧急、不重要紧急、不重要不紧急，并能在待办页直接筛选。</p>
           </article>
           <article>
-            <h3>周报素材</h3>
-            <p>按日期整理已完成事项和评论，直接复制成 Markdown。</p>
+            <h3>历史和周报</h3>
+            <p>保留创建时间、完成时间和评论记录，按周或月回看，快速形成周报素材。</p>
           </article>
         </div>
       </section>
 
       <section id="desktop" class="section split">
         <div>
-          <p class="eyebrow">Desktop</p>
-          <h2>不是浏览器标签页，是独立桌面软件。</h2>
+          <p class="eyebrow">桌面端</p>
+          <h2>不用浏览器，也能像普通软件一样打开。</h2>
         </div>
-        <p>桌面端使用 Electron 构建，支持安装包、桌面快捷方式、可配置项目名称和数据保存位置。浏览器版仍保留，方便开发和轻量使用。</p>
+        <p>
+          桌面版基于 Electron 构建，支持安装到 Windows 10。本地数据位置可配置，应用名称也可配置，后续开源给其他人使用时不绑定个人名字。
+        </p>
       </section>
 
       <section id="privacy" class="section split">
         <div>
-          <p class="eyebrow">Local First</p>
-          <h2>数据在你电脑上。</h2>
+          <p class="eyebrow">本地优先</p>
+          <h2>数据默认留在你的电脑里。</h2>
         </div>
-        <p>默认保存到 <code>Documents/DaheTodo/tasks.json</code>，也可以在设置里改位置。应用核心功能不需要联网，不上传待办和评论。</p>
+        <p>
+          待办数据默认写入 <code>Documents/DaheTodo/tasks.json</code>，也可以在设置里更换目录。仓库已经加入隐私检查，避免把本地任务数据、安装包、缓存和工具目录提交到 GitHub。
+        </p>
+      </section>
+
+      <section id="english" class="section english-block">
+        <p class="eyebrow">English</p>
+        <h2>Local-first todo app for interruption-heavy work.</h2>
+        <p>
+          A lightweight Windows desktop todo app for quick capture, completion notes, priority quadrants, history review, and weekly-report material collection. Task data stays local by default.
+        </p>
       </section>
 
       <section id="start" class="section start-card">
-        <p class="eyebrow">Start</p>
-        <h2>开源发布准备好了。</h2>
+        <p class="eyebrow">开始使用</p>
+        <h2>下载、安装，然后直接记录。</h2>
         <ol>
-          <li>在 GitHub Releases 上传 Windows 安装包。</li>
-          <li>启用 GitHub Pages，目录选择 <code>docs/</code>。</li>
-          <li>把页面里的 GitHub 链接替换成你的真实仓库地址。</li>
+          <li>进入 GitHub Releases 下载 Windows 安装包。</li>
+          <li>安装后打开桌面版，先在设置里确认数据存储位置。</li>
+          <li>新增待办，完成后追加评论，周报页会帮你汇总素材。</li>
         </ol>
       </section>
     </main>
