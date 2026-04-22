@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>大何的待办事项</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="titlebar">
+        <div>
+          <div class="eyebrow" id="versionLabel">桌面端</div>
+          <h1>大何的待办事项</h1>
+        </div>
+        <div class="header-actions">
+          <button id="openDataFolder" class="quiet-button" type="button">数据文件夹</button>
+          <button id="exportData" class="quiet-button" type="button">导出</button>
+          <button id="importData" class="quiet-button" type="button">导入</button>
+        </div>
+      </header>
+
+      <section class="capture-strip" aria-labelledby="capture-title">
+        <div class="capture-title">
+          <h2 id="capture-title">快速收集</h2>
+          <p id="dataPath">正在读取数据文件...</p>
+        </div>
+        <form id="taskForm" class="capture-form">
+          <label>
+            <span>事情</span>
+            <input id="taskTitle" type="text" autocomplete="off" placeholder="先扔进来，别靠脑子记" required />
+          </label>
+          <label>
+            <span>补充</span>
+            <input id="taskNote" type="text" autocomplete="off" placeholder="对象、地点、下一步" />
+          </label>
+          <label>
+            <span>分组</span>
+            <input id="taskTag" type="text" list="tagOptions" placeholder="部门 / 工作 / 生活" />
+          </label>
+          <label>
+            <span>优先级</span>
+            <select id="taskPriority">
+              <option value="normal">普通</option>
+              <option value="high">紧急</option>
+              <option value="low">稍后</option>
+            </select>
+          </label>
+          <button class="primary-button" type="submit">添加</button>
+          <datalist id="tagOptions"></datalist>
+        </form>
+      </section>
+
+      <section class="desk-grid">
+        <aside class="side-panel" aria-label="导航和筛选">
+          <div class="stat-grid">
+            <div><strong id="activeCount">0</strong><span>待办</span></div>
+            <div><strong id="doneCount">0</strong><span>完成</span></div>
+          </div>
+
+          <nav class="view-tabs" aria-label="视图">
+            <button class="view-tab active" type="button" data-view="active">待办</button>
+            <button class="view-tab" type="button" data-view="history">历史</button>
+            <button class="view-tab" type="button" data-view="report">周报</button>
+          </nav>
+
+          <label class="search-box">
+            <span>全局搜索</span>
+            <input id="searchInput" type="search" placeholder="事情 / 评论 / 分组" />
+          </label>
+
+          <div id="historyFilters" class="filter-group hidden">
+            <label>
+              <span>从</span>
+              <input id="historyFrom" type="date" />
+            </label>
+            <label>
+              <span>到</span>
+              <input id="historyTo" type="date" />
+            </label>
+            <label>
+              <span>归档</span>
+              <select id="historyGroup">
+                <option value="none">不分组</option>
+                <option value="week">按周</option>
+                <option value="month">按月</option>
+              </select>
+            </label>
+            <button id="resetFilters" class="quiet-button full" type="button">重置筛选</button>
+          </div>
+        </aside>
+
+        <section class="list-panel" aria-label="事项列表">
+          <div class="panel-head">
+            <div>
+              <h2 id="listTitle">待办</h2>
+              <p id="listSummary">0 条</p>
+            </div>
+          </div>
+          <div id="taskList" class="task-list"></div>
+          <p id="emptyList" class="empty">没有事项。</p>
+        </section>
+
+        <section class="detail-panel" aria-label="详情">
+          <div id="detailEmpty" class="detail-empty">
+            <h2>选中一条事项</h2>
+            <p>右侧会显示详情、完成时间和追加评论。</p>
+          </div>
+
+          <article id="taskDetail" class="task-detail hidden">
+            <div class="detail-top">
+              <div>
+                <span id="detailStatus" class="status-pill">待办</span>
+                <h2 id="detailTitle"></h2>
+                <p id="detailNote"></p>
+              </div>
+              <div class="detail-actions">
+                <button id="toggleDone" class="primary-button" type="button">完成</button>
+                <button id="deleteTask" class="danger-button" type="button">删除</button>
+              </div>
+            </div>
+            <dl id="detailMeta" class="detail-meta"></dl>
+            <section id="commentSection" class="comments-block">
+              <h3>完成评论</h3>
+              <textarea id="newComment" rows="4" placeholder="新增一条评论，适合以后写周报"></textarea>
+              <button id="addComment" class="primary-button" type="button">追加评论</button>
+              <div id="commentList" class="comment-list"></div>
+            </section>
+          </article>
+
+          <article id="reportDetail" class="report-detail hidden">
+            <div class="report-tools">
+              <label>
+                <span>从</span>
+                <input id="reportFrom" type="date" />
+              </label>
+              <label>
+                <span>到</span>
+                <input id="reportTo" type="date" />
+              </label>
+              <button id="copyReport" class="quiet-button" type="button">复制</button>
+            </div>
+            <textarea id="reportOutput" spellcheck="false"></textarea>
+          </article>
+        </section>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

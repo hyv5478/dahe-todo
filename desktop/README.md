@@ -1,0 +1,43 @@
+# 大何的待办事项桌面端
+
+版本：`v0.3.0-desktop-alpha`
+
+## 开发启动
+
+```powershell
+npm.cmd start
+```
+
+## 检查
+
+```powershell
+npm.cmd run check
+```
+
+## 打包
+
+```powershell
+npm.cmd run dist
+```
+
+安装包输出：
+
+```text
+desktop/release/大何的待办事项 Setup 0.3.0.exe
+```
+
+免安装可执行文件：
+
+```text
+desktop/release/win-unpacked/大何的待办事项.exe
+```
+
+## 数据文件
+
+桌面端数据默认保存到：
+
+```text
+%USERPROFILE%\Documents\DaheTodo\tasks.json
+```
+
+如果这个文件为空，桌面端启动时会尝试从浏览器版的 `data/tasks.json` 迁移已有事项。

@@ -1,0 +1,41 @@
+{
+  "name": "dahe-todo-desktop",
+  "version": "0.3.0",
+  "private": true,
+  "author": "Dahe",
+  "description": "大何的待办事项桌面端",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/data-store.js && node --check src/renderer/app.js && node tests/data-store.test.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.dahe.todo",
+    "productName": "大何的待办事项",
+    "npmRebuild": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12"
+  }
+}

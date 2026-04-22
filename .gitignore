@@ -1,3 +1,6 @@
 data/tasks.json
 server.out.log
 server.err.log
+desktop/node_modules/
+desktop/.npm-cache/
+desktop/release/
