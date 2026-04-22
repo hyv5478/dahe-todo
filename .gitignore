@@ -6,3 +6,4 @@ desktop/.npm-cache/
 desktop/release/
 .tools/
 .chrome-test-profile/
+tmp_pdf_pages/

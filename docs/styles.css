@@ -59,6 +59,35 @@ main {
   font-size: 14px;
 }
 
+.nav-cluster {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.78);
+  color: var(--muted);
+  font-size: 14px;
+  padding: 0 14px;
+}
+
+.language-switch a {
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.language-switch strong {
+  color: var(--ink);
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
@@ -226,6 +255,15 @@ code {
 @media (max-width: 640px) {
   .nav-links {
     display: none;
+  }
+
+  .topbar,
+  .nav-cluster {
+    align-items: flex-start;
+  }
+
+  .topbar {
+    flex-direction: column;
   }
 
   .hero {

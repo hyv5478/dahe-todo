@@ -8,18 +8,26 @@
       name="description"
       content="本地优先的 Windows 待办工具，适合大量琐碎事项、临时插入任务、完成评论和周报素材整理。"
     />
+    <link rel="alternate" hreflang="zh-CN" href="https://hyv5478.github.io/dahe-todo/" />
+    <link rel="alternate" hreflang="en" href="https://hyv5478.github.io/dahe-todo/en.html" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="hero">
       <nav class="topbar">
         <a class="brand" href="#">大何的待办事项</a>
-        <div class="nav-links">
-          <a href="#features">功能</a>
-          <a href="#desktop">桌面端</a>
-          <a href="#privacy">本地存储</a>
-          <a href="#english">English</a>
-          <a href="#start">开始使用</a>
+        <div class="nav-cluster">
+          <div class="language-switch" aria-label="语言切换">
+            <strong>简体中文</strong>
+            <span>·</span>
+            <a href="en.html" lang="en">English</a>
+          </div>
+          <div class="nav-links">
+            <a href="#features">功能</a>
+            <a href="#desktop">桌面端</a>
+            <a href="#privacy">本地存储</a>
+            <a href="#start">开始使用</a>
+          </div>
         </div>
       </nav>
 
@@ -85,14 +93,6 @@
         </div>
         <p>
           待办数据默认写入 <code>Documents/DaheTodo/tasks.json</code>，也可以在设置里更换目录。仓库已经加入隐私检查，避免把本地任务数据、安装包、缓存和工具目录提交到 GitHub。
-        </p>
-      </section>
-
-      <section id="english" class="section english-block">
-        <p class="eyebrow">English</p>
-        <h2>Local-first todo app for interruption-heavy work.</h2>
-        <p>
-          A lightweight Windows desktop todo app for quick capture, completion notes, priority quadrants, history review, and weekly-report material collection. Task data stays local by default.
         </p>
       </section>
 

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-label="Dahe Todo desktop app preview">
+  <rect width="1280" height="820" fill="#eee8dc"/>
+  <rect x="48" y="48" width="1184" height="724" rx="22" fill="#fffdf8" stroke="#d6ccba"/>
+
+  <rect x="72" y="74" width="1136" height="86" rx="14" fill="#1c242d"/>
+  <text x="96" y="111" fill="#dfeee7" font-family="Segoe UI, sans-serif" font-size="18">Desktop app · v0.3.2</text>
+  <text x="96" y="143" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700">Dahe Todo</text>
+  <rect x="944" y="94" width="82" height="42" rx="10" fill="#fffdf8"/>
+  <text x="969" y="121" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="16">Settings</text>
+  <rect x="1040" y="94" width="124" height="42" rx="10" fill="#dfeee7"/>
+  <text x="1061" y="121" fill="#176f54" font-family="Segoe UI, sans-serif" font-size="16">Data folder</text>
+
+  <rect x="72" y="184" width="1136" height="106" rx="16" fill="#f7f4eb" stroke="#d9d3c7"/>
+  <text x="96" y="220" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="22" font-weight="700">Quick capture</text>
+  <text x="96" y="249" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="15">Write it down first. Do not rely on memory.</text>
+  <rect x="360" y="210" width="300" height="46" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="382" y="239" fill="#707985" font-family="Segoe UI, sans-serif" font-size="16">Task</text>
+  <rect x="678" y="210" width="280" height="46" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="700" y="239" fill="#707985" font-family="Segoe UI, sans-serif" font-size="16">Place, people, next step</text>
+  <rect x="976" y="210" width="100" height="46" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="999" y="239" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="16">Priority</text>
+  <rect x="1092" y="210" width="92" height="46" rx="10" fill="#176f54"/>
+  <text x="1122" y="239" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="16" font-weight="700">Add</text>
+
+  <rect x="72" y="314" width="212" height="416" rx="16" fill="#fffdf8" stroke="#d9d3c7"/>
+  <rect x="96" y="340" width="72" height="72" rx="12" fill="#f8f5ed" stroke="#d9d3c7"/>
+  <text x="121" y="374" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="30" font-weight="700">7</text>
+  <text x="116" y="398" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="15">Open</text>
+  <rect x="184" y="340" width="72" height="72" rx="12" fill="#f8f5ed" stroke="#d9d3c7"/>
+  <text x="206" y="374" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="30" font-weight="700">19</text>
+  <text x="196" y="398" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="15">Done</text>
+  <rect x="96" y="438" width="160" height="44" rx="10" fill="#1c242d"/>
+  <text x="154" y="466" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="16">Todo</text>
+  <rect x="96" y="494" width="160" height="44" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="151" y="522" fill="#46515d" font-family="Segoe UI, sans-serif" font-size="16">History</text>
+  <rect x="96" y="550" width="160" height="44" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="151" y="578" fill="#46515d" font-family="Segoe UI, sans-serif" font-size="16">Report</text>
+
+  <rect x="308" y="314" width="394" height="416" rx="16" fill="#fffdf8" stroke="#d9d3c7"/>
+  <text x="336" y="356" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="24" font-weight="700">Todo</text>
+  <text x="336" y="382" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="15">7 items · Important urgent</text>
+
+  <g>
+    <rect x="336" y="414" width="338" height="86" rx="12" fill="#ffffff" stroke="#176f54"/>
+    <rect x="336" y="414" width="5" height="86" rx="3" fill="#176f54"/>
+    <text x="360" y="447" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Confirm sample schedule</text>
+    <text x="360" y="477" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="14">Created 04/22 11:21 · Example</text>
+  </g>
+  <g>
+    <rect x="336" y="518" width="338" height="78" rx="12" fill="#ffffff" stroke="#d9d3c7"/>
+    <text x="360" y="549" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Review placeholder request</text>
+    <text x="360" y="578" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="14">Created 04/22 13:05 · Example</text>
+  </g>
+  <g>
+    <rect x="336" y="614" width="338" height="78" rx="12" fill="#ffffff" stroke="#d9d3c7"/>
+    <text x="360" y="645" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Prepare weekly notes</text>
+    <text x="360" y="674" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="14">Created 04/22 15:40 · Example</text>
+  </g>
+
+  <rect x="726" y="314" width="482" height="416" rx="16" fill="#fffdf8" stroke="#d9d3c7"/>
+  <rect x="754" y="344" width="78" height="28" rx="14" fill="#dfeee7"/>
+  <text x="772" y="363" fill="#0f543f" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700">Open</text>
+  <text x="754" y="414" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">Confirm sample schedule</text>
+  <text x="754" y="454" fill="#46515d" font-family="Segoe UI, sans-serif" font-size="17">Details, timestamps, groups, and appendable comments.</text>
+  <line x1="754" y1="486" x2="1180" y2="486" stroke="#d9d3c7"/>
+  <text x="754" y="532" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="15">Created</text>
+  <text x="836" y="532" fill="#1c242d" font-family="Segoe UI, sans-serif" font-size="15">04/22 11:21</text>
+  <text x="754" y="572" fill="#757b80" font-family="Segoe UI, sans-serif" font-size="15">Priority</text>
+  <text x="836" y="572" fill="#a86517" font-family="Segoe UI, sans-serif" font-size="15">Important urgent</text>
+  <rect x="754" y="616" width="184" height="44" rx="10" fill="#176f54"/>
+  <text x="826" y="644" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="16" font-weight="700">Finish</text>
+</svg>
