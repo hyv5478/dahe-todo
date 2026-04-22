@@ -7,3 +7,4 @@ desktop/release/
 .tools/
 .chrome-test-profile/
 tmp_pdf_pages/
+tmp_*.txt

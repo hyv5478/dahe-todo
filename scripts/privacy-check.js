@@ -8,6 +8,7 @@ const blockedPathPatterns = [
   /^\.tools\//,
   /^\.chrome-test-profile\//,
   /^tmp_pdf_pages\//,
+  /^tmp_.*\.txt$/i,
   /(^|\/)tasks\.json$/i,
   /(^|\/).*\.sqlite$/i,
   /(^|\/).*\.db$/i,
