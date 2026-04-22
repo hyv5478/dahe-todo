@@ -12,6 +12,7 @@ Website: [https://hyv5478.github.io/dahe-todo/](https://hyv5478.github.io/dahe-t
 
 - Capture sudden tasks quickly without breaking your current workflow.
 - Add multiple comments after completion to record results, causes, impact, and follow-up notes.
+- Start a Pomodoro focus timer for the current task and track daily or weekly focus effort.
 - Use four priority quadrants: important urgent, important not urgent, not important urgent, not important not urgent.
 - Filter active tasks by priority and review completed work by time range.
 - Collect completed tasks and comments for weekly reports.
@@ -20,7 +21,7 @@ Website: [https://hyv5478.github.io/dahe-todo/](https://hyv5478.github.io/dahe-t
 
 ## Current Version
 
-- Desktop version: `v0.3.2-priority-quadrants`
+- Desktop version: `v0.4.0-focus-timer`
 - Windows installer is available from GitHub Releases.
 
 ## Desktop Development
@@ -56,18 +57,18 @@ npm.cmd run dist
 Installer output:
 
 ```text
-desktop/release/大何的待办事项 Setup 0.3.2.exe
+desktop/release/大何的待办事项 Setup 0.4.0.exe
 ```
 
 ## Local Data
 
-Default desktop data file:
+Default desktop data directory:
 
 ```text
-%USERPROFILE%\Documents\DaheTodo\tasks.json
+%USERPROFILE%\Documents\DaheTodo
 ```
 
-The data directory can be changed inside the app. This repository includes a privacy check and pre-push hook to prevent local task data, installers, dependency caches, and tool directories from being committed.
+`tasks.json` stores tasks, and `focus-sessions.json` stores Pomodoro focus history. The data directory can be changed inside the app. This repository includes a privacy check and pre-push hook to prevent local task data, installers, dependency caches, and tool directories from being committed.
 
 ## Web Version
 

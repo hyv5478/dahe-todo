@@ -1,8 +1,8 @@
 # 大何的待办事项桌面端
 
-版本：`v0.3.2-priority-quadrants`
+当前版本：`v0.4.0-focus-timer`
 
-## 开发启动
+## 启动
 
 ```powershell
 npm.cmd start
@@ -23,30 +23,35 @@ npm.cmd run dist
 安装包输出：
 
 ```text
-desktop/release/大何的待办事项 Setup 0.3.2.exe
+desktop/release/大何的待办事项 Setup 0.4.0.exe
 ```
 
-免安装可执行文件：
+免安装版本：
 
 ```text
 desktop/release/win-unpacked/大何的待办事项.exe
 ```
 
-## 数据文件
+## 本地数据
 
-桌面端数据默认保存到：
+默认数据目录：
 
 ```text
-%USERPROFILE%\Documents\DaheTodo\tasks.json
+%USERPROFILE%\Documents\DaheTodo
 ```
 
-如果这个文件为空，桌面端启动时会尝试从浏览器版的 `data/tasks.json` 迁移已有事项。
+数据文件：
 
-## 设置
+```text
+tasks.json
+focus-sessions.json
+```
 
-点击右上角“设置”可以修改：
+## 0.4 番茄钟
 
-- 项目名称
-- 数据保存位置
-
-保存位置变化时，当前事项会写入新目录下的 `tasks.json`。
+- 每个番茄钟绑定到一个未完成任务。
+- 同一时间只能有一个活动番茄。
+- 专注结束后可以开始休息或跳过休息。
+- 放弃本轮时需要记录中断原因。
+- 周报会统计本期番茄数和专注小时数。
+- 设置里可以调整专注时长、休息时长和结束提醒。

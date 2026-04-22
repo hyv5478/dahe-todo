@@ -1,10 +1,13 @@
 const state = {
   tasks: [],
+  focusSessions: [],
   view: "active",
   selectedId: null,
   search: "",
   priorityFilter: "all",
   info: null,
+  activeFocusId: null,
+  timerId: null,
 };
 
 const el = {
@@ -19,6 +22,7 @@ const el = {
   tagOptions: document.querySelector("#tagOptions"),
   activeCount: document.querySelector("#activeCount"),
   doneCount: document.querySelector("#doneCount"),
+  todayFocusCount: document.querySelector("#todayFocusCount"),
   viewTabs: document.querySelectorAll(".view-tab"),
   searchInput: document.querySelector("#searchInput"),
   priorityFilters: document.querySelector("#priorityFilters"),
@@ -41,6 +45,19 @@ const el = {
   detailMeta: document.querySelector("#detailMeta"),
   toggleDone: document.querySelector("#toggleDone"),
   deleteTask: document.querySelector("#deleteTask"),
+  focusBar: document.querySelector("#focusBar"),
+  focusBarMode: document.querySelector("#focusBarMode"),
+  focusBarTask: document.querySelector("#focusBarTask"),
+  focusBarTime: document.querySelector("#focusBarTime"),
+  focusBarAbort: document.querySelector("#focusBarAbort"),
+  focusPanelSummary: document.querySelector("#focusPanelSummary"),
+  focusRing: document.querySelector("#focusRing"),
+  focusTime: document.querySelector("#focusTime"),
+  startFocus: document.querySelector("#startFocus"),
+  startBreak: document.querySelector("#startBreak"),
+  skipBreak: document.querySelector("#skipBreak"),
+  abortFocus: document.querySelector("#abortFocus"),
+  focusStats: document.querySelector("#focusStats"),
   commentSection: document.querySelector("#commentSection"),
   newComment: document.querySelector("#newComment"),
   addComment: document.querySelector("#addComment"),
@@ -60,6 +77,12 @@ const el = {
   chooseDataDir: document.querySelector("#chooseDataDir"),
   settingAppName: document.querySelector("#settingAppName"),
   settingDataDir: document.querySelector("#settingDataDir"),
+  settingFocusMinutes: document.querySelector("#settingFocusMinutes"),
+  settingBreakMinutes: document.querySelector("#settingBreakMinutes"),
+  settingNotify: document.querySelector("#settingNotify"),
+  interruptDialog: document.querySelector("#interruptDialog"),
+  closeInterrupt: document.querySelector("#closeInterrupt"),
+  interruptOptions: document.querySelectorAll(".interrupt-option"),
 };
 
 const priorityOptions = [
@@ -82,18 +105,24 @@ const legacyPriorityMap = {
   low: "not-important-not-urgent",
 };
 
+const focusDoneStatuses = new Set(["break-ready", "completed", "break-skipped"]);
+const focusOpenStatuses = new Set(["focus-running", "break-ready", "break-running"]);
+
 init();
 
 async function init() {
   state.info = await window.daheTodo.appInfo();
   state.tasks = (await window.daheTodo.loadTasks()).map(normalizeTask).filter(Boolean);
+  state.focusSessions = (await window.daheTodo.loadFocusSessions()).map(normalizeFocusSession).filter(Boolean);
+  state.activeFocusId = findOpenFocusSession()?.id || null;
   setDefaultReportRange();
   bindEvents();
+  startTimerLoop();
   render();
 }
 
 function bindEvents() {
-  el.taskForm.addEventListener("submit", async (event) => {
+  el.taskForm.addEventListener("submit", (event) => {
     event.preventDefault();
     addTask();
   });
@@ -133,6 +162,13 @@ function bindEvents() {
 
   el.toggleDone.addEventListener("click", toggleSelectedDone);
   el.deleteTask.addEventListener("click", deleteSelectedTask);
+  el.startFocus.addEventListener("click", startFocusForSelectedTask);
+  el.startBreak.addEventListener("click", startBreak);
+  el.skipBreak.addEventListener("click", skipBreak);
+  el.abortFocus.addEventListener("click", openInterruptDialog);
+  el.focusBarAbort.addEventListener("click", openInterruptDialog);
+  el.closeInterrupt.addEventListener("click", closeInterruptDialog);
+  el.interruptOptions.forEach((button) => button.addEventListener("click", () => abortActiveFocus(button.dataset.reason)));
   el.addComment.addEventListener("click", addSelectedComment);
   el.copyReport.addEventListener("click", copyReport);
   el.openDataFolder.addEventListener("click", () => window.daheTodo.openDataFolder());
@@ -145,15 +181,19 @@ function bindEvents() {
   el.saveSettings.addEventListener("click", saveSettings);
 }
 
-async function save() {
+async function saveTasks() {
   await window.daheTodo.saveTasks(state.tasks);
+}
+
+async function saveFocusSessions() {
+  await window.daheTodo.saveFocusSessions(state.focusSessions);
 }
 
 function addTask() {
   const title = el.taskTitle.value.trim();
   if (!title) return;
   const task = {
-    id: makeId(),
+    id: makeId("task"),
     title,
     note: el.taskNote.value.trim(),
     tag: el.taskTag.value.trim(),
@@ -168,27 +208,156 @@ function addTask() {
   el.taskForm.reset();
   el.taskPriority.value = "important-urgent";
   el.taskTitle.focus();
-  save();
+  saveTasks();
   render();
 }
 
 function toggleSelectedDone() {
   const task = selectedTask();
   if (!task) return;
+  const active = activeFocusSession();
+  if (active && active.taskId === task.id && focusOpenStatuses.has(active.status)) {
+    alert("当前任务还有一轮番茄没有收尾，先完成或放弃本轮。");
+    return;
+  }
   task.completedAt = task.completedAt ? null : new Date().toISOString();
   if (task.completedAt) state.view = "history";
-  save();
+  saveTasks();
   render();
 }
 
 function deleteSelectedTask() {
   const task = selectedTask();
   if (!task) return;
-  if (!confirm(`删除“${task.title}”？`)) return;
+  const active = activeFocusSession();
+  if (active && active.taskId === task.id && focusOpenStatuses.has(active.status)) {
+    alert("当前任务正在专注中，先完成或放弃本轮番茄。");
+    return;
+  }
+  if (!confirm(`确定删除「${task.title}」吗？专注历史会保留任务快照。`)) return;
   state.tasks = state.tasks.filter((item) => item.id !== task.id);
   state.selectedId = null;
-  save();
+  saveTasks();
   render();
+}
+
+function startFocusForSelectedTask() {
+  const task = selectedTask();
+  if (!task || task.completedAt) return;
+  if (activeFocusSession()) {
+    alert("同一时间只能守住一个番茄钟。");
+    return;
+  }
+  const now = new Date();
+  const session = {
+    id: makeId("focus"),
+    taskId: task.id,
+    taskTitleSnapshot: task.title,
+    taskPrioritySnapshot: task.priority,
+    taskTagSnapshot: task.tag,
+    localDate: toDateInputValue(now),
+    plannedFocusMinutes: state.info.focusMinutes,
+    plannedBreakMinutes: state.info.breakMinutes,
+    startedAt: now.toISOString(),
+    focusEndsAt: new Date(now.getTime() + state.info.focusMinutes * 60 * 1000).toISOString(),
+    focusEndedAt: null,
+    breakStartedAt: null,
+    breakEndsAt: null,
+    breakEndedAt: null,
+    status: "focus-running",
+    interruptReason: null,
+  };
+  state.focusSessions.unshift(session);
+  state.activeFocusId = session.id;
+  saveFocusSessions();
+  render();
+}
+
+function completeFocus(session) {
+  session.status = "break-ready";
+  session.focusEndedAt = session.focusEndedAt || new Date().toISOString();
+  window.daheTodo.notifyFocusEnded({
+    title: "番茄钟完成",
+    body: `「${session.taskTitleSnapshot}」完成一轮专注，可以休息一下。`,
+  });
+  saveFocusSessions();
+}
+
+function startBreak() {
+  const session = activeFocusSession();
+  if (!session || session.status !== "break-ready") return;
+  const now = new Date();
+  session.status = "break-running";
+  session.breakStartedAt = now.toISOString();
+  session.breakEndsAt = new Date(now.getTime() + session.plannedBreakMinutes * 60 * 1000).toISOString();
+  saveFocusSessions();
+  render();
+}
+
+function completeBreak(session) {
+  session.status = "completed";
+  session.breakEndedAt = session.breakEndedAt || new Date().toISOString();
+  state.activeFocusId = null;
+  window.daheTodo.notifyFocusEnded({
+    title: "休息结束",
+    body: "休息时间到了，可以开始下一轮。",
+  });
+  saveFocusSessions();
+}
+
+function skipBreak() {
+  const session = activeFocusSession();
+  if (!session || session.status !== "break-ready") return;
+  session.status = "break-skipped";
+  session.breakEndedAt = new Date().toISOString();
+  state.activeFocusId = null;
+  saveFocusSessions();
+  render();
+}
+
+function openInterruptDialog() {
+  if (!activeFocusSession()) return;
+  el.interruptDialog.showModal();
+}
+
+function closeInterruptDialog() {
+  el.interruptDialog.close();
+}
+
+function abortActiveFocus(reason) {
+  const session = activeFocusSession();
+  if (!session) return;
+  const now = new Date().toISOString();
+  session.status = "interrupted";
+  session.focusEndedAt = session.focusEndedAt || now;
+  session.breakEndedAt = session.breakEndedAt || null;
+  session.interruptReason = reason || "其他";
+  state.activeFocusId = null;
+  closeInterruptDialog();
+  saveFocusSessions();
+  render();
+}
+
+function startTimerLoop() {
+  if (state.timerId) clearInterval(state.timerId);
+  state.timerId = setInterval(() => {
+    advanceTimerIfNeeded();
+    renderFocus();
+  }, 1000);
+}
+
+function advanceTimerIfNeeded() {
+  const session = activeFocusSession();
+  if (!session) return;
+  const now = Date.now();
+  if (session.status === "focus-running" && new Date(session.focusEndsAt).getTime() <= now) {
+    completeFocus(session);
+    render();
+  }
+  if (session.status === "break-running" && new Date(session.breakEndsAt).getTime() <= now) {
+    completeBreak(session);
+    render();
+  }
 }
 
 function addSelectedComment() {
@@ -197,20 +366,24 @@ function addSelectedComment() {
   const text = el.newComment.value.trim();
   if (!text) return;
   task.comments.push({
-    id: makeId(),
+    id: makeId("comment"),
     text,
     createdAt: new Date().toISOString(),
     updatedAt: null,
   });
   el.newComment.value = "";
-  save();
+  saveTasks();
   render();
 }
 
 async function importData() {
   const imported = await window.daheTodo.importData();
   if (!imported) return;
-  state.tasks = imported.map(normalizeTask).filter(Boolean);
+  const tasks = Array.isArray(imported) ? imported : imported.tasks;
+  const focusSessions = Array.isArray(imported.focusSessions) ? imported.focusSessions : [];
+  state.tasks = tasks.map(normalizeTask).filter(Boolean);
+  state.focusSessions = focusSessions.map(normalizeFocusSession).filter(Boolean);
+  state.activeFocusId = findOpenFocusSession()?.id || null;
   state.selectedId = null;
   render();
 }
@@ -219,18 +392,22 @@ function render() {
   el.versionLabel.textContent = `桌面端 · ${state.info.version}`;
   el.appNameTitle.textContent = state.info.appName;
   document.title = state.info.appName;
-  el.dataPath.textContent = state.info.dataFile;
+  el.dataPath.textContent = `${state.info.dataFile} · 专注记录 ${state.info.focusFile}`;
   renderCounts();
   renderTags();
   renderTabs();
   renderList();
   renderDetail();
   renderReport();
+  renderFocus();
 }
 
 function openSettings() {
   el.settingAppName.value = state.info.appName;
   el.settingDataDir.value = state.info.dataDir;
+  el.settingFocusMinutes.value = state.info.focusMinutes;
+  el.settingBreakMinutes.value = state.info.breakMinutes;
+  el.settingNotify.checked = state.info.notifyOnFocusEnd;
   el.settingsDialog.showModal();
 }
 
@@ -248,10 +425,16 @@ async function saveSettings() {
   const appName = el.settingAppName.value.trim();
   const dataDir = el.settingDataDir.value.trim();
   if (!appName || !dataDir) {
-    alert("项目名称和数据保存位置都不能为空。");
+    alert("应用名称和数据目录都不能为空。");
     return;
   }
-  state.info = await window.daheTodo.saveSettings({ appName, dataDir }, state.tasks);
+  state.info = await window.daheTodo.saveSettings({
+    appName,
+    dataDir,
+    focusMinutes: Number(el.settingFocusMinutes.value),
+    breakMinutes: Number(el.settingBreakMinutes.value),
+    notifyOnFocusEnd: el.settingNotify.checked,
+  }, state.tasks, state.focusSessions);
   closeSettings();
   render();
 }
@@ -259,6 +442,7 @@ async function saveSettings() {
 function renderCounts() {
   el.activeCount.textContent = state.tasks.filter((task) => !task.completedAt).length;
   el.doneCount.textContent = state.tasks.filter((task) => task.completedAt).length;
+  el.todayFocusCount.textContent = completedFocusCountForRange(todayStart(), todayEnd());
 }
 
 function renderTags() {
@@ -285,31 +469,26 @@ function visibleTasks() {
     tasks = tasks.filter(matchesSearch);
   } else if (state.view === "active") {
     tasks = tasks.filter((task) => !task.completedAt);
-    if (state.priorityFilter !== "all") {
-      tasks = tasks.filter((task) => task.priority === state.priorityFilter);
-    }
+    if (state.priorityFilter !== "all") tasks = tasks.filter((task) => task.priority === state.priorityFilter);
   } else if (state.view === "history") {
-    tasks = tasks
-      .filter((task) => task.completedAt)
-      .filter((task) => withinRange(task.completedAt, el.historyFrom.value, el.historyTo.value));
+    tasks = tasks.filter((task) => task.completedAt).filter((task) => withinRange(task.completedAt, el.historyFrom.value, el.historyTo.value));
   } else if (state.view === "report") {
     tasks = state.tasks.filter((task) => task.completedAt);
   }
-
   return tasks.sort((a, b) => new Date(getSortDate(b)) - new Date(getSortDate(a)));
 }
 
 function renderList() {
   const tasks = visibleTasks();
-  const listTitle = state.search ? "搜索结果" : ({ active: "待办", history: "历史", report: "周报素材" }[state.view] || "事项");
-  el.listTitle.textContent = listTitle;
+  const titleMap = { active: "待办", history: "历史", report: "周报素材" };
+  el.listTitle.textContent = state.search ? "搜索结果" : titleMap[state.view] || "事项";
   const filterText = state.view === "active" && !state.search && state.priorityFilter !== "all" ? ` · ${priorityText[state.priorityFilter]}` : "";
   el.listSummary.textContent = state.search ? `找到 ${tasks.length} 条` : `${tasks.length} 条${filterText}`;
   el.taskList.replaceChildren();
   el.emptyList.hidden = tasks.length > 0;
 
   if (!tasks.length) {
-    el.emptyList.textContent = state.search ? "没有找到匹配事项。" : "没有事项。";
+    el.emptyList.textContent = state.search ? "没有找到相关事项。" : "暂无事项。";
     return;
   }
 
@@ -345,7 +524,6 @@ function renderTaskRow(task) {
 
   const top = document.createElement("div");
   top.className = "task-row-top";
-
   const content = document.createElement("div");
   const title = document.createElement("h3");
   title.textContent = task.title;
@@ -353,15 +531,14 @@ function renderTaskRow(task) {
   note.textContent = task.note || "无补充";
   const meta = document.createElement("div");
   meta.className = "row-meta";
-  meta.textContent = task.completedAt
-    ? `办理 ${formatDateTime(task.completedAt)} · ${task.tag || "未分组"}`
-    : `创建 ${formatDateTime(task.createdAt)} · ${task.tag || "未分组"}`;
+  const focusCount = completedSessionsForTask(task.id).length;
+  const timeText = task.completedAt ? `办理 ${formatDateTime(task.completedAt)}` : `创建 ${formatDateTime(task.createdAt)}`;
+  meta.textContent = `${timeText} · ${task.tag || "未分组"} · ${focusCount} 个番茄`;
   content.append(title, note, meta);
 
   const badge = document.createElement("span");
   badge.className = `priority ${task.priority}`;
-  badge.textContent = priorityText[task.priority] || priorityText.normal;
-
+  badge.textContent = priorityText[task.priority] || "重要不紧急";
   top.append(content, badge);
   row.append(top);
   return row;
@@ -377,7 +554,7 @@ function renderDetail() {
 
   el.detailStatus.textContent = task.completedAt ? "已完成" : "待办中";
   el.detailTitle.textContent = task.title;
-  el.detailNote.textContent = task.note || "没有补充说明。";
+  el.detailNote.textContent = task.note || "暂无补充。";
   el.toggleDone.textContent = task.completedAt ? "重新打开" : "完成";
   el.commentSection.classList.toggle("hidden", !task.completedAt);
 
@@ -385,7 +562,8 @@ function renderDetail() {
     ["创建", formatDateTime(task.createdAt)],
     ["办理", task.completedAt ? formatDateTime(task.completedAt) : "未完成"],
     ["分组", task.tag || "未分组"],
-    ["优先级", priorityText[task.priority] || priorityText.normal],
+    ["优先级", priorityText[task.priority] || "重要不紧急"],
+    ["番茄", `${completedSessionsForTask(task.id).length} 个`],
   ];
   el.detailMeta.replaceChildren(...items.flatMap(([key, value]) => {
     const dt = document.createElement("dt");
@@ -398,11 +576,48 @@ function renderDetail() {
   renderComments(task);
 }
 
+function renderFocus() {
+  const task = selectedTask();
+  const active = activeFocusSession();
+  const selectedHasActive = task && active && active.taskId === task.id;
+  const todayCount = completedFocusCountForRange(todayStart(), todayEnd());
+
+  el.focusBar.classList.toggle("hidden", !active);
+  if (active) {
+    el.focusBarMode.textContent = focusModeText(active);
+    el.focusBarTask.textContent = active.taskTitleSnapshot;
+    el.focusBarTime.textContent = remainingText(active);
+    el.focusBarAbort.classList.toggle("hidden", active.status === "break-ready");
+  }
+
+  if (!task) return;
+  const taskCount = completedSessionsForTask(task.id).length;
+  el.focusStats.textContent = `本任务 ${taskCount} 个番茄 · 今日 ${todayCount} 个番茄`;
+  el.startFocus.classList.toggle("hidden", Boolean(active) || Boolean(task.completedAt));
+  el.startBreak.classList.toggle("hidden", !selectedHasActive || active.status !== "break-ready");
+  el.skipBreak.classList.toggle("hidden", !selectedHasActive || active.status !== "break-ready");
+  el.abortFocus.classList.toggle("hidden", !selectedHasActive || active.status === "break-ready");
+
+  const displaySession = selectedHasActive ? active : null;
+  if (!displaySession) {
+    el.focusPanelSummary.textContent = task.completedAt ? "已完成事项不能开始新的番茄。" : `专注 ${state.info.focusMinutes} 分钟，休息 ${state.info.breakMinutes} 分钟。`;
+    el.focusTime.textContent = `${String(state.info.focusMinutes).padStart(2, "0")}:00`;
+    el.focusRing.style.setProperty("--progress", "0deg");
+    el.focusRing.dataset.mode = "idle";
+    return;
+  }
+
+  el.focusPanelSummary.textContent = focusPanelText(displaySession);
+  el.focusTime.textContent = remainingText(displaySession);
+  el.focusRing.style.setProperty("--progress", `${progressDegrees(displaySession)}deg`);
+  el.focusRing.dataset.mode = displaySession.status.startsWith("break") ? "break" : "focus";
+}
+
 function renderComments(task) {
   if (!task.comments.length) {
     const empty = document.createElement("p");
     empty.className = "empty";
-    empty.textContent = "还没有完成评论。";
+    empty.textContent = "还没有完成备注。";
     el.commentList.replaceChildren(empty);
     return;
   }
@@ -410,14 +625,11 @@ function renderComments(task) {
   el.commentList.replaceChildren(...task.comments.map((comment) => {
     const card = document.createElement("div");
     card.className = "comment-card";
-
     const meta = document.createElement("div");
     meta.className = "comment-meta";
     meta.textContent = `评论 ${formatDateTime(comment.createdAt)}${comment.updatedAt ? ` · 修改 ${formatDateTime(comment.updatedAt)}` : ""}`;
-
     const textarea = document.createElement("textarea");
     textarea.value = comment.text;
-
     const button = document.createElement("button");
     button.className = "quiet-button";
     button.type = "button";
@@ -425,10 +637,9 @@ function renderComments(task) {
     button.addEventListener("click", () => {
       comment.text = textarea.value.trim();
       comment.updatedAt = new Date().toISOString();
-      save();
+      saveTasks();
       render();
     });
-
     card.append(meta, textarea, button);
     return card;
   }));
@@ -439,14 +650,18 @@ function renderReport() {
     .filter((task) => task.completedAt)
     .filter((task) => withinRange(task.completedAt, el.reportFrom.value, el.reportTo.value))
     .sort((a, b) => new Date(a.completedAt) - new Date(b.completedAt));
-  const lines = [`# 周报素材（${el.reportFrom.value || "开始"} 至 ${el.reportTo.value || "今天"}）`, ""];
+  const sessions = completedSessionsForRange(el.reportFrom.value, el.reportTo.value);
+  const minutes = sessions.reduce((sum, session) => sum + Number(session.plannedFocusMinutes || 0), 0);
+  const lines = [`# 周报素材（${el.reportFrom.value || "开始"} 到 ${el.reportTo.value || "今天"}）`, ""];
+  lines.push(`本期完成 ${tasks.length} 项任务，累计 ${sessions.length} 个番茄，约 ${formatHours(minutes)} 小时专注。`, "");
   if (!tasks.length) {
-    lines.push("本时间段暂无已完成事项。");
+    lines.push("本期还没有已完成事项。");
   } else {
     groupByDate(tasks).forEach(([date, dayTasks]) => {
       lines.push(`## ${date}`);
       dayTasks.forEach((task) => {
-        lines.push(`- ${task.tag ? `【${task.tag}】` : ""}${task.title}`);
+        const focusCount = completedSessionsForTask(task.id).filter((session) => withinRange(session.focusEndedAt || session.startedAt, el.reportFrom.value, el.reportTo.value)).length;
+        lines.push(`- ${task.tag ? `【${task.tag}】` : ""}${task.title}${focusCount ? `（${focusCount} 个番茄）` : ""}`);
         task.comments.forEach((comment) => lines.push(`  - ${formatDateTime(comment.createdAt)}：${comment.text}`));
       });
       lines.push("");
@@ -466,6 +681,14 @@ async function copyReport() {
 
 function selectedTask() {
   return state.tasks.find((task) => task.id === state.selectedId) || null;
+}
+
+function activeFocusSession() {
+  return state.focusSessions.find((session) => session.id === state.activeFocusId && focusOpenStatuses.has(session.status)) || null;
+}
+
+function findOpenFocusSession() {
+  return state.focusSessions.find((session) => focusOpenStatuses.has(session.status)) || null;
 }
 
 function matchesSearch(task) {
@@ -503,30 +726,52 @@ function groupByDate(tasks) {
   return [...map.entries()];
 }
 
-function weekKey(date) {
-  const start = new Date(date);
-  const day = start.getDay() || 7;
-  start.setDate(start.getDate() - day + 1);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  return { id: toDateInputValue(start), label: `${toDateInputValue(start)} 至 ${toDateInputValue(end)}` };
+function completedSessionsForTask(taskId) {
+  return state.focusSessions.filter((session) => session.taskId === taskId && focusDoneStatuses.has(session.status));
 }
 
-function monthKey(date) {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  return { id: `${year}-${String(month).padStart(2, "0")}`, label: `${year}年${month}月` };
+function completedSessionsForRange(from, to) {
+  return state.focusSessions.filter((session) => focusDoneStatuses.has(session.status)).filter((session) => withinRange(session.focusEndedAt || session.startedAt, from, to));
 }
 
-function getSortDate(task) {
-  return task.completedAt || task.createdAt;
+function completedFocusCountForRange(from, to) {
+  return completedSessionsForRange(from, to).length;
+}
+
+function focusModeText(session) {
+  if (session.status === "focus-running") return "专注中";
+  if (session.status === "break-ready") return "专注完成";
+  if (session.status === "break-running") return "休息中";
+  return "番茄钟";
+}
+
+function focusPanelText(session) {
+  if (session.status === "focus-running") return "正在守住当前任务。";
+  if (session.status === "break-ready") return "完成 1 个番茄，可以开始休息。";
+  if (session.status === "break-running") return "休息中，给脑子缓一口气。";
+  return "开始一轮专注，把当前任务守住。";
+}
+
+function remainingText(session) {
+  if (session.status === "break-ready") return "完成";
+  const end = session.status === "break-running" ? session.breakEndsAt : session.focusEndsAt;
+  const ms = Math.max(0, new Date(end).getTime() - Date.now());
+  return formatDuration(Math.ceil(ms / 1000));
+}
+
+function progressDegrees(session) {
+  if (session.status === "break-ready") return 360;
+  const start = new Date(session.status === "break-running" ? session.breakStartedAt : session.startedAt).getTime();
+  const end = new Date(session.status === "break-running" ? session.breakEndsAt : session.focusEndsAt).getTime();
+  const total = Math.max(1, end - start);
+  const elapsed = Math.min(total, Math.max(0, Date.now() - start));
+  return Math.round((elapsed / total) * 360);
 }
 
 function normalizeTask(task) {
   if (!task || !task.title) return null;
   return {
-    id: task.id || makeId(),
+    id: task.id || makeId("task"),
     title: String(task.title),
     note: task.note ? String(task.note) : "",
     tag: task.tag ? String(task.tag) : "",
@@ -546,10 +791,32 @@ function normalizePriority(priority) {
 function normalizeComment(comment) {
   if (!comment || !comment.text) return null;
   return {
-    id: comment.id || makeId(),
+    id: comment.id || makeId("comment"),
     text: String(comment.text),
     createdAt: comment.createdAt || new Date().toISOString(),
     updatedAt: comment.updatedAt || null,
+  };
+}
+
+function normalizeFocusSession(session) {
+  if (!session || !session.id || !session.taskId) return null;
+  return {
+    id: String(session.id),
+    taskId: String(session.taskId),
+    taskTitleSnapshot: session.taskTitleSnapshot ? String(session.taskTitleSnapshot) : "未命名任务",
+    taskPrioritySnapshot: normalizePriority(session.taskPrioritySnapshot),
+    taskTagSnapshot: session.taskTagSnapshot ? String(session.taskTagSnapshot) : "",
+    localDate: session.localDate || toDateInputValue(new Date(session.startedAt || Date.now())),
+    plannedFocusMinutes: Number(session.plannedFocusMinutes) || 25,
+    plannedBreakMinutes: Number(session.plannedBreakMinutes) || 5,
+    startedAt: session.startedAt || new Date().toISOString(),
+    focusEndsAt: session.focusEndsAt || session.focusEndedAt || new Date().toISOString(),
+    focusEndedAt: session.focusEndedAt || null,
+    breakStartedAt: session.breakStartedAt || null,
+    breakEndsAt: session.breakEndsAt || null,
+    breakEndedAt: session.breakEndedAt || null,
+    status: ["focus-running", "break-ready", "break-running", "completed", "break-skipped", "interrupted"].includes(session.status) ? session.status : "completed",
+    interruptReason: session.interruptReason || null,
   };
 }
 
@@ -562,6 +829,34 @@ function setDefaultReportRange() {
   el.reportTo.value = toDateInputValue(now);
 }
 
+function weekKey(date) {
+  const start = new Date(date);
+  const day = start.getDay() || 7;
+  start.setDate(start.getDate() - day + 1);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  return { id: toDateInputValue(start), label: `${toDateInputValue(start)} 到 ${toDateInputValue(end)}` };
+}
+
+function monthKey(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  return { id: `${year}-${String(month).padStart(2, "0")}`, label: `${year}年${month}月` };
+}
+
+function todayStart() {
+  return toDateInputValue(new Date());
+}
+
+function todayEnd() {
+  return toDateInputValue(new Date());
+}
+
+function getSortDate(task) {
+  return task.completedAt || task.createdAt;
+}
+
 function formatDateTime(value) {
   return new Intl.DateTimeFormat("zh-CN", {
     month: "2-digit",
@@ -571,6 +866,17 @@ function formatDateTime(value) {
   }).format(new Date(value));
 }
 
+function formatDuration(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatHours(minutes) {
+  const hours = minutes / 60;
+  return Number.isInteger(hours) ? String(hours) : hours.toFixed(1);
+}
+
 function toDateInputValue(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -578,6 +884,7 @@ function toDateInputValue(date) {
   return `${year}-${month}-${day}`;
 }
 
-function makeId() {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+function makeId(prefix) {
+  const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+  return prefix ? `${prefix}_${id}` : id;
 }

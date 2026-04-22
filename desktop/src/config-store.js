@@ -4,6 +4,9 @@ const path = require("path");
 const defaultConfig = {
   appName: "大何的待办事项",
   dataDir: "",
+  focusMinutes: 25,
+  breakMinutes: 5,
+  notifyOnFocusEnd: true,
 };
 
 function createConfigStore(options) {
@@ -21,8 +24,7 @@ function createConfigStore(options) {
   function read() {
     ensure();
     try {
-      const parsed = JSON.parse(fs.readFileSync(configFile, "utf8"));
-      return normalize(parsed);
+      return normalize(JSON.parse(fs.readFileSync(configFile, "utf8")));
     } catch {
       return normalize(defaultConfig);
     }
@@ -36,12 +38,25 @@ function createConfigStore(options) {
 
   function normalize(config) {
     return {
-      appName: typeof config.appName === "string" && config.appName.trim() ? config.appName.trim() : defaultConfig.appName,
-      dataDir: typeof config.dataDir === "string" && config.dataDir.trim() ? config.dataDir.trim() : defaultDataDir,
+      appName: textOr(config.appName, defaultConfig.appName),
+      dataDir: textOr(config.dataDir, defaultDataDir),
+      focusMinutes: clampNumber(config.focusMinutes, 5, 180, defaultConfig.focusMinutes),
+      breakMinutes: clampNumber(config.breakMinutes, 1, 60, defaultConfig.breakMinutes),
+      notifyOnFocusEnd: config.notifyOnFocusEnd !== false,
     };
   }
 
   return { configDir, configFile, ensure, read, write };
+}
+
+function textOr(value, fallback) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(number)));
 }
 
 module.exports = { createConfigStore };

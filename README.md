@@ -12,6 +12,7 @@
 
 - 快速记录突然插入的事项，降低打断当前工作的成本。
 - 完成事项后可以追加多条评论，记录过程、结果、原因和影响。
+- 可以给当前任务开启番茄钟，记录每日和每周的专注投入。
 - 支持优先级四象限：重要紧急、重要不紧急、不重要紧急、不重要不紧急。
 - 待办页支持按优先级筛选，历史页支持按时间回看。
 - 周报页汇总完成事项和评论，方便复制整理成周报素材。
@@ -20,7 +21,7 @@
 
 ## 当前版本
 
-- 桌面端版本：`v0.3.2-priority-quadrants`
+- 桌面端版本：`v0.4.0-focus-timer`
 - Windows 安装包见 GitHub Releases。
 
 ## 桌面端开发
@@ -56,18 +57,18 @@ npm.cmd run dist
 安装包输出：
 
 ```text
-desktop/release/大何的待办事项 Setup 0.3.2.exe
+desktop/release/大何的待办事项 Setup 0.4.0.exe
 ```
 
 ## 本地数据
 
-桌面端默认数据文件：
+桌面端默认数据目录：
 
 ```text
-%USERPROFILE%\Documents\DaheTodo\tasks.json
+%USERPROFILE%\Documents\DaheTodo
 ```
 
-应用内可以更改数据目录。仓库已加入隐私检查和 pre-push 钩子，避免把本地任务数据、安装包、依赖缓存和工具目录提交到 GitHub。
+其中 `tasks.json` 保存待办，`focus-sessions.json` 保存番茄钟专注记录。应用内可以更改数据目录。仓库已加入隐私检查和 pre-push 钩子，避免把本地任务数据、安装包、依赖缓存和工具目录提交到 GitHub。
 
 ## 网页版
 

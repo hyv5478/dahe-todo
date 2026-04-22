@@ -1,13 +1,13 @@
 {
   "name": "dahe-todo-desktop",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "private": true,
-  "author": "Dahe",
+  "author": "Big_He",
   "description": "大何的待办事项桌面端",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "check": "node --check src/main.js && node --check src/preload.js && node --check src/data-store.js && node --check src/config-store.js && node --check src/renderer/app.js && node tests/data-store.test.js && node tests/config-store.test.js && node tests/priority-normalization.test.js",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/data-store.js && node --check src/config-store.js && node --check src/renderer/app.js && node tests/data-store.test.js && node tests/config-store.test.js && node tests/priority-normalization.test.js && node tests/focus-timer.test.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder --win nsis"
   },

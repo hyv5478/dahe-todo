@@ -16,10 +16,21 @@
         <div class="header-actions">
           <button id="openSettings" class="quiet-button" type="button">设置</button>
           <button id="openDataFolder" class="quiet-button" type="button">数据文件夹</button>
-          <button id="exportData" class="quiet-button" type="button">导出</button>
-          <button id="importData" class="quiet-button" type="button">导入</button>
+          <button id="exportData" class="quiet-button" type="button">导出备份</button>
+          <button id="importData" class="quiet-button" type="button">导入备份</button>
         </div>
       </header>
+
+      <section id="focusBar" class="focus-bar hidden" aria-live="polite">
+        <div>
+          <span id="focusBarMode">专注中</span>
+          <strong id="focusBarTask">未选择任务</strong>
+        </div>
+        <div class="focus-bar-right">
+          <strong id="focusBarTime">00:00</strong>
+          <button id="focusBarAbort" class="danger-button" type="button">放弃本轮</button>
+        </div>
+      </section>
 
       <section class="capture-strip" aria-labelledby="capture-title">
         <div class="capture-title">
@@ -29,15 +40,15 @@
         <form id="taskForm" class="capture-form">
           <label>
             <span>事情</span>
-            <input id="taskTitle" type="text" autocomplete="off" placeholder="先扔进来，别靠脑子记" required />
+            <input id="taskTitle" type="text" autocomplete="off" placeholder="马上记下来" required />
           </label>
           <label>
             <span>补充</span>
-            <input id="taskNote" type="text" autocomplete="off" placeholder="对象、地点、下一步" />
+            <input id="taskNote" type="text" autocomplete="off" placeholder="地点、对象、下一步" />
           </label>
           <label>
             <span>分组</span>
-            <input id="taskTag" type="text" list="tagOptions" placeholder="部门 / 工作 / 生活" />
+            <input id="taskTag" type="text" list="tagOptions" placeholder="工作 / 生活" />
           </label>
           <label>
             <span>优先级</span>
@@ -58,6 +69,7 @@
           <div class="stat-grid">
             <div><strong id="activeCount">0</strong><span>待办</span></div>
             <div><strong id="doneCount">0</strong><span>完成</span></div>
+            <div class="today-focus"><strong id="todayFocusCount">0</strong><span>今日番茄</span></div>
           </div>
 
           <nav class="view-tabs" aria-label="视图">
@@ -97,7 +109,7 @@
                 <option value="month">按月</option>
               </select>
             </label>
-            <button id="resetFilters" class="quiet-button full" type="button">重置筛选</button>
+            <button id="resetFilters" class="quiet-button full" type="button">清空筛选</button>
           </div>
         </aside>
 
@@ -109,19 +121,19 @@
             </div>
           </div>
           <div id="taskList" class="task-list"></div>
-          <p id="emptyList" class="empty">没有事项。</p>
+          <p id="emptyList" class="empty">暂无事项。</p>
         </section>
 
         <section class="detail-panel" aria-label="详情">
           <div id="detailEmpty" class="detail-empty">
-            <h2>选中一条事项</h2>
-            <p>右侧会显示详情、完成时间和追加评论。</p>
+            <h2>选择一个事项</h2>
+            <p>右侧会显示详情、专注番茄、时间、分组和评论。</p>
           </div>
 
           <article id="taskDetail" class="task-detail hidden">
             <div class="detail-top">
               <div>
-                <span id="detailStatus" class="status-pill">待办</span>
+                <span id="detailStatus" class="status-pill">待办中</span>
                 <h2 id="detailTitle"></h2>
                 <p id="detailNote"></p>
               </div>
@@ -130,10 +142,30 @@
                 <button id="deleteTask" class="danger-button" type="button">删除</button>
               </div>
             </div>
+
+            <section id="focusPanel" class="focus-panel">
+              <div class="focus-head">
+                <div>
+                  <h3>专注番茄</h3>
+                  <p id="focusPanelSummary">开始一轮专注，把当前任务守住。</p>
+                </div>
+                <div id="focusRing" class="focus-ring" style="--progress: 0deg">
+                  <span id="focusTime">25:00</span>
+                </div>
+              </div>
+              <div class="focus-actions">
+                <button id="startFocus" class="tomato-button" type="button">开始专注</button>
+                <button id="startBreak" class="quiet-button hidden" type="button">开始休息</button>
+                <button id="skipBreak" class="quiet-button hidden" type="button">跳过休息</button>
+                <button id="abortFocus" class="danger-button hidden" type="button">放弃本轮</button>
+              </div>
+              <p id="focusStats" class="focus-stats">本任务 0 个番茄 · 今日 0 个番茄</p>
+            </section>
+
             <dl id="detailMeta" class="detail-meta"></dl>
             <section id="commentSection" class="comments-block">
-              <h3>完成评论</h3>
-              <textarea id="newComment" rows="4" placeholder="新增一条评论，适合以后写周报"></textarea>
+              <h3>完成备注</h3>
+              <textarea id="newComment" rows="4" placeholder="这次完成一条：结果、原因、后续影响"></textarea>
               <button id="addComment" class="primary-button" type="button">追加评论</button>
               <div id="commentList" class="comment-list"></div>
             </section>
@@ -162,25 +194,57 @@
         <div class="settings-head">
           <div>
             <h2>应用设置</h2>
-            <p>名称和数据保存位置都会保存在本机配置里。</p>
+            <p>调整应用名称、数据位置和番茄钟节奏。</p>
           </div>
           <button id="closeSettings" class="icon-button" type="button" aria-label="关闭设置">×</button>
         </div>
         <label>
-          <span>项目名称</span>
+          <span>应用名称</span>
           <input id="settingAppName" type="text" autocomplete="off" />
         </label>
         <label>
-          <span>数据保存位置</span>
+          <span>数据存储目录</span>
           <div class="path-picker">
             <input id="settingDataDir" type="text" readonly />
             <button id="chooseDataDir" class="quiet-button" type="button">选择</button>
           </div>
         </label>
-        <p class="settings-note">更改保存位置时，会把当前事项写入新位置的 `tasks.json`。</p>
+        <div class="settings-grid">
+          <label>
+            <span>专注时长（分钟）</span>
+            <input id="settingFocusMinutes" type="number" min="5" max="180" step="5" />
+          </label>
+          <label>
+            <span>休息时长（分钟）</span>
+            <input id="settingBreakMinutes" type="number" min="1" max="60" step="1" />
+          </label>
+        </div>
+        <label class="checkbox-line">
+          <input id="settingNotify" type="checkbox" />
+          <span>番茄结束后弹出提醒</span>
+        </label>
+        <p class="settings-note">更换数据目录会把当前待办和专注记录一起写入新目录。</p>
         <div class="settings-actions">
           <button id="cancelSettings" class="quiet-button" type="button">取消</button>
           <button id="saveSettings" class="primary-button" type="button">保存设置</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="interruptDialog" class="settings-dialog">
+      <form method="dialog" class="settings-card">
+        <div class="settings-head">
+          <div>
+            <h2>为什么放弃本轮？</h2>
+            <p>记录中断原因，后面复盘会很有用。</p>
+          </div>
+          <button id="closeInterrupt" class="icon-button" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="interrupt-options">
+          <button class="interrupt-option" type="button" data-reason="被人打断">被人打断</button>
+          <button class="interrupt-option" type="button" data-reason="临时插入">临时插入</button>
+          <button class="interrupt-option" type="button" data-reason="自己分心">自己分心</button>
+          <button class="interrupt-option" type="button" data-reason="其他">其他</button>
         </div>
       </form>
     </dialog>

@@ -49,3 +49,14 @@ Desktop priority classification pass.
 - Replaced old high/normal/low priority with four Eisenhower-style categories
 - Added active-task priority filter tabs: all plus four priority categories
 - Migrates old priorities automatically: high, normal, low
+
+## v0.4.0-focus-timer
+
+Desktop focus timer pass.
+
+- Added task-bound Pomodoro focus timer
+- Added independent `focus-sessions.json` for focus history
+- Added configurable focus minutes, break minutes, and end notification
+- Added global focus bar, detail-panel focus ring, break flow, and interruption reasons
+- Added today Pomodoro count and weekly report focus summary
+- Export/import now carries both tasks and focus sessions
