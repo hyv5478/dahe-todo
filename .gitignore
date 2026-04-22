@@ -4,3 +4,5 @@ server.err.log
 desktop/node_modules/
 desktop/.npm-cache/
 desktop/release/
+.tools/
+.chrome-test-profile/

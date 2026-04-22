@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>大何的待办事项</title>
+    <meta name="description" content="本地优先的 Windows 桌面待办工具，适合大量琐碎事项、完成评论和周报素材整理。" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="topbar">
+        <a class="brand" href="#">大何的待办事项</a>
+        <div class="nav-links">
+          <a href="#features">功能</a>
+          <a href="#desktop">桌面端</a>
+          <a href="#privacy">本地存储</a>
+          <a href="#start">开始使用</a>
+        </div>
+      </nav>
+      <div class="hero-grid">
+        <section class="hero-copy">
+          <p class="eyebrow">Windows 本地优先 · 桌面待办 · 周报素材</p>
+          <h1>把突然插进来的琐事，稳稳接住。</h1>
+          <p class="lead">一个给高频事务场景做的待办工具：快速记录、打钩完成、追加过程评论、按周/月回看，并把完成记录整理成周报素材。</p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#start">下载安装包</a>
+            <a class="secondary-link" href="https://github.com/" target="_blank" rel="noreferrer">查看 GitHub</a>
+          </div>
+        </section>
+        <figure class="preview-frame">
+          <img src="assets/desktop-preview.svg" alt="大何的待办事项桌面端界面预览" />
+        </figure>
+      </div>
+    </header>
+
+    <main>
+      <section id="features" class="section">
+        <div class="section-head">
+          <p class="eyebrow">Features</p>
+          <h2>为真实工作流设计</h2>
+        </div>
+        <div class="feature-grid">
+          <article>
+            <h3>随手记录</h3>
+            <p>事情一来先落地，不靠脑子硬记。支持补充说明、分组和优先级。</p>
+          </article>
+          <article>
+            <h3>完成评论</h3>
+            <p>一件事可以追加多条评论，保留时间线，也能修改旧评论。</p>
+          </article>
+          <article>
+            <h3>全局搜索</h3>
+            <p>标题、说明、分组、评论都能搜，事项多了也能快速翻出来。</p>
+          </article>
+          <article>
+            <h3>周报素材</h3>
+            <p>按日期整理已完成事项和评论，直接复制成 Markdown。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="desktop" class="section split">
+        <div>
+          <p class="eyebrow">Desktop</p>
+          <h2>不是浏览器标签页，是独立桌面软件。</h2>
+        </div>
+        <p>桌面端使用 Electron 构建，支持安装包、桌面快捷方式、可配置项目名称和数据保存位置。浏览器版仍保留，方便开发和轻量使用。</p>
+      </section>
+
+      <section id="privacy" class="section split">
+        <div>
+          <p class="eyebrow">Local First</p>
+          <h2>数据在你电脑上。</h2>
+        </div>
+        <p>默认保存到 <code>Documents/DaheTodo/tasks.json</code>，也可以在设置里改位置。应用核心功能不需要联网，不上传待办和评论。</p>
+      </section>
+
+      <section id="start" class="section start-card">
+        <p class="eyebrow">Start</p>
+        <h2>开源发布准备好了。</h2>
+        <ol>
+          <li>在 GitHub Releases 上传 Windows 安装包。</li>
+          <li>启用 GitHub Pages，目录选择 <code>docs/</code>。</li>
+          <li>把页面里的 GitHub 链接替换成你的真实仓库地址。</li>
+        </ol>
+      </section>
+    </main>
+  </body>
+</html>

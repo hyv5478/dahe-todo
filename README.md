@@ -1,34 +1,93 @@
 # 大何的待办事项
 
-一个 Windows 10 本地可用的轻量待办工具。
+本地优先的 Windows 待办工具，适合大量琐碎事项、临时插入任务、完成评论和周报素材整理。
 
-## 打开方式
+![桌面端预览](docs/assets/desktop-preview.svg)
 
-双击 `start-todo.bat`。它会启动一个只监听本机的本地服务，并自动打开浏览器。
+## 特性
 
-如果窗口提示 `Node.js was not found`，说明这台电脑没有安装 Node.js，先安装 Node.js 后再打开。
+- 快速记录：事情一来先落地，不靠脑子硬记。
+- 完成打钩：记录创建时间和办理时间。
+- 多条评论：完成后可以追加多条评论，也能修改旧评论。
+- 全局搜索：搜索标题、补充说明、分组和评论。
+- 历史归档：按周或按月查看已完成事项。
+- 周报素材：自动整理成 Markdown。
+- 本地存储：桌面端数据保存到本机 JSON 文件，位置可配置。
+- 可配置名称：项目名称可以在桌面端设置里修改，方便二次发布。
 
-## 数据
+## 版本
 
-事项会落地保存到 `data/tasks.json`，不会上传到网络。这个文件可以直接备份、复制、迁移。
+- 桌面端：`v0.3.1-desktop-settings`
+- 浏览器本地版：保留在仓库根目录
 
-如果你以前用过浏览器本地存储里的旧数据，第一次通过 `start-todo.bat` 打开时会自动迁移到 `data/tasks.json`。
+## 桌面端使用
 
-## 适合的流程
-
-1. 有事插进来就先添加。
-2. 办完点圆形勾选，事项会进入历史。
-3. 在历史里追加评论，旧评论也可以修改。
-4. 搜索框是全局搜索，会查待办、历史、分组、补充说明和所有评论。
-5. 历史页可以按周或按月归档查看，200 条以后也方便翻。
-6. 到周报页复制或下载 Markdown 文本。
-
-## 自测
-
-需要验证时，右键 PowerShell 运行：
+开发启动：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\test-local.ps1
+cd desktop
+npm.cmd install --cache .npm-cache
+npm.cmd start
 ```
 
-看到 `OK: server starts, page responds, API writes, data/tasks.json contains saved comments.` 就表示启动、页面访问、接口写入、本地文件落盘都通过。测试会自动恢复原来的 `data/tasks.json`。
+检查：
+
+```powershell
+cd desktop
+npm.cmd run check
+```
+
+打包 Windows 安装包：
+
+```powershell
+cd desktop
+npm.cmd run dist
+```
+
+打包输出：
+
+```text
+desktop/release/大何的待办事项 Setup 0.3.0.exe
+```
+
+## 数据位置
+
+桌面端默认保存到：
+
+```text
+%USERPROFILE%\Documents\DaheTodo\tasks.json
+```
+
+也可以在桌面端右上角“设置”里修改保存位置。
+
+## 浏览器本地版
+
+浏览器版保留给轻量使用和开发验证：
+
+```powershell
+start-todo.bat
+```
+
+浏览器版数据文件是 `data/tasks.json`，该文件不会提交到 GitHub。
+
+## 宣传页面
+
+GitHub Pages 可以使用：
+
+```text
+docs/
+```
+
+页面入口：
+
+```text
+docs/index.html
+```
+
+## 隐私
+
+应用核心功能不需要联网，不会主动上传待办和评论。详见 [PRIVACY.md](PRIVACY.md)。
+
+## License
+
+MIT
