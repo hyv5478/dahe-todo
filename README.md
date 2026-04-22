@@ -4,6 +4,8 @@
 
 ![桌面端预览](docs/assets/desktop-preview.svg)
 
+项目地址：<https://github.com/hyv5478/dahe-todo>
+
 ## 特性
 
 - 快速记录：事情一来先落地，不靠脑子硬记。
