@@ -160,6 +160,7 @@
                 <button id="abortFocus" class="danger-button hidden" type="button">放弃本轮</button>
               </div>
               <p id="focusStats" class="focus-stats">本任务 0 个番茄 · 今日 0 个番茄</p>
+              <div id="focusHistory" class="focus-history"></div>
             </section>
 
             <dl id="detailMeta" class="detail-meta"></dl>
@@ -244,7 +245,17 @@
           <button class="interrupt-option" type="button" data-reason="被人打断">被人打断</button>
           <button class="interrupt-option" type="button" data-reason="临时插入">临时插入</button>
           <button class="interrupt-option" type="button" data-reason="自己分心">自己分心</button>
-          <button class="interrupt-option" type="button" data-reason="其他">其他</button>
+          <button class="interrupt-option" type="button" data-reason="其他" data-interrupt-kind="other">其他</button>
+        </div>
+        <div id="interruptOtherBox" class="interrupt-other hidden">
+          <label>
+            <span>具体事项</span>
+            <textarea id="interruptOtherDetail" rows="3" placeholder="写清楚这次插入或打断的事情"></textarea>
+          </label>
+          <div class="interrupt-other-actions">
+            <button id="cancelOtherInterrupt" class="quiet-button" type="button">返回</button>
+            <button id="confirmOtherInterrupt" class="primary-button" type="button">生成重要紧急待办</button>
+          </div>
         </div>
       </form>
     </dialog>

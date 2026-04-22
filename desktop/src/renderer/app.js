@@ -58,6 +58,7 @@ const el = {
   skipBreak: document.querySelector("#skipBreak"),
   abortFocus: document.querySelector("#abortFocus"),
   focusStats: document.querySelector("#focusStats"),
+  focusHistory: document.querySelector("#focusHistory"),
   commentSection: document.querySelector("#commentSection"),
   newComment: document.querySelector("#newComment"),
   addComment: document.querySelector("#addComment"),
@@ -83,6 +84,10 @@ const el = {
   interruptDialog: document.querySelector("#interruptDialog"),
   closeInterrupt: document.querySelector("#closeInterrupt"),
   interruptOptions: document.querySelectorAll(".interrupt-option"),
+  interruptOtherBox: document.querySelector("#interruptOtherBox"),
+  interruptOtherDetail: document.querySelector("#interruptOtherDetail"),
+  confirmOtherInterrupt: document.querySelector("#confirmOtherInterrupt"),
+  cancelOtherInterrupt: document.querySelector("#cancelOtherInterrupt"),
 };
 
 const priorityOptions = [
@@ -107,6 +112,7 @@ const legacyPriorityMap = {
 
 const focusDoneStatuses = new Set(["break-ready", "completed", "break-skipped", "task-completed"]);
 const focusOpenStatuses = new Set(["focus-running", "break-ready", "break-running"]);
+const focusTrackedStatuses = new Set(["break-ready", "completed", "break-skipped", "task-completed", "interrupted"]);
 
 init();
 
@@ -168,7 +174,11 @@ function bindEvents() {
   el.abortFocus.addEventListener("click", openInterruptDialog);
   el.focusBarAbort.addEventListener("click", openInterruptDialog);
   el.closeInterrupt.addEventListener("click", closeInterruptDialog);
-  el.interruptOptions.forEach((button) => button.addEventListener("click", () => abortActiveFocus(button.dataset.reason)));
+  el.interruptOptions.forEach((button) =>
+    button.addEventListener("click", () => handleInterruptReason(button.dataset.interruptKind || button.dataset.reason)),
+  );
+  el.confirmOtherInterrupt.addEventListener("click", confirmOtherInterrupt);
+  el.cancelOtherInterrupt.addEventListener("click", hideOtherInterruptBox);
   el.addComment.addEventListener("click", addSelectedComment);
   el.copyReport.addEventListener("click", copyReport);
   el.openDataFolder.addEventListener("click", () => window.daheTodo.openDataFolder());
@@ -192,24 +202,37 @@ async function saveFocusSessions() {
 function addTask() {
   const title = el.taskTitle.value.trim();
   if (!title) return;
-  const task = {
-    id: makeId("task"),
+  const task = createTask({
     title,
     note: el.taskNote.value.trim(),
     tag: el.taskTag.value.trim(),
     priority: el.taskPriority.value,
-    createdAt: new Date().toISOString(),
-    completedAt: null,
-    comments: [],
-  };
-  state.tasks.unshift(task);
-  state.selectedId = task.id;
-  state.view = "active";
+  });
+  insertTask(task);
   el.taskForm.reset();
   el.taskPriority.value = "important-urgent";
   el.taskTitle.focus();
   saveTasks();
   render();
+}
+
+function createTask({ title, note = "", tag = "", priority = "important-urgent" }) {
+  return {
+    id: makeId("task"),
+    title: String(title).trim(),
+    note: String(note || "").trim(),
+    tag: String(tag || "").trim(),
+    priority: normalizePriority(priority),
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+    comments: [],
+  };
+}
+
+function insertTask(task) {
+  state.tasks.unshift(task);
+  state.selectedId = task.id;
+  state.view = "active";
 }
 
 function toggleSelectedDone() {
@@ -340,11 +363,49 @@ function skipBreak() {
 
 function openInterruptDialog() {
   if (!activeFocusSession()) return;
+  hideOtherInterruptBox();
   el.interruptDialog.showModal();
 }
 
 function closeInterruptDialog() {
-  el.interruptDialog.close();
+  hideOtherInterruptBox();
+  if (el.interruptDialog.open) el.interruptDialog.close();
+}
+
+function hideOtherInterruptBox() {
+  el.interruptOtherBox.classList.add("hidden");
+  el.interruptOtherDetail.value = "";
+}
+
+function showOtherInterruptBox() {
+  el.interruptOtherBox.classList.remove("hidden");
+  el.interruptOtherDetail.focus();
+}
+
+function handleInterruptReason(reason) {
+  if (reason === "other") {
+    showOtherInterruptBox();
+    return;
+  }
+  abortActiveFocus(reason);
+}
+
+function confirmOtherInterrupt() {
+  const detail = el.interruptOtherDetail.value.trim();
+  if (!detail) {
+    el.interruptOtherDetail.focus();
+    return;
+  }
+  abortActiveFocus(`其他：${detail}`);
+  const task = createTask({
+    title: detail,
+    note: "番茄钟中断时自动生成，请尽快处理。",
+    tag: "插入事项",
+    priority: "important-urgent",
+  });
+  insertTask(task);
+  saveTasks();
+  render();
 }
 
 function abortActiveFocus(reason) {
@@ -614,8 +675,12 @@ function renderFocus() {
   }
 
   if (!task) return;
+  const taskSessions = sessionsForTask(task.id);
   const taskCount = completedSessionsForTask(task.id).length;
-  el.focusStats.textContent = `本任务 ${taskCount} 个番茄 · 今日 ${todayCount} 个番茄`;
+  const interruptedCount = taskSessions.filter((session) => session.status === "interrupted").length;
+  const totalMinutes = totalFocusMinutesForTask(task.id);
+  el.focusStats.textContent = `本任务 ${taskCount} 个完整番茄 · 中断 ${interruptedCount} 次 · 累计 ${formatMinuteText(totalMinutes)} · 今日 ${todayCount} 个番茄`;
+  renderFocusHistory(task);
   el.startFocus.classList.toggle("hidden", Boolean(active) || Boolean(task.completedAt));
   el.startBreak.classList.toggle("hidden", !selectedHasActive || active.status !== "break-ready");
   el.skipBreak.classList.toggle("hidden", !selectedHasActive || active.status !== "break-ready");
@@ -623,9 +688,15 @@ function renderFocus() {
 
   const displaySession = selectedHasActive ? active : null;
   if (!displaySession) {
-    el.focusPanelSummary.textContent = task.completedAt ? "已完成事项不能开始新的番茄。" : `专注 ${state.info.focusMinutes} 分钟，休息 ${state.info.breakMinutes} 分钟。`;
-    el.focusTime.textContent = `${String(state.info.focusMinutes).padStart(2, "0")}:00`;
-    el.focusRing.style.setProperty("--progress", "0deg");
+    if (task.completedAt) {
+      el.focusPanelSummary.textContent = `已完成：累计 ${formatMinuteText(totalMinutes)}，中途打断 ${interruptedCount} 次。`;
+      el.focusTime.textContent = formatCompactMinuteText(totalMinutes);
+      el.focusRing.style.setProperty("--progress", totalMinutes > 0 ? "360deg" : "0deg");
+    } else {
+      el.focusPanelSummary.textContent = `专注 ${state.info.focusMinutes} 分钟，休息 ${state.info.breakMinutes} 分钟。`;
+      el.focusTime.textContent = `${String(state.info.focusMinutes).padStart(2, "0")}:00`;
+      el.focusRing.style.setProperty("--progress", "0deg");
+    }
     el.focusRing.dataset.mode = "idle";
     return;
   }
@@ -668,23 +739,101 @@ function renderComments(task) {
   }));
 }
 
+function buildFocusHistoryRows(sessions) {
+  const rows = [];
+  const interruptGroups = new Map();
+  sessions.forEach((session) => {
+    const minutes = focusSessionMinutes(session);
+    if (session.status !== "interrupted") {
+      rows.push({
+        status: session.status,
+        label: focusStatusText(session),
+        latestAt: session.startedAt,
+        minutes,
+        reason: session.interruptReason || "",
+        count: 1,
+      });
+      return;
+    }
+
+    const reason = session.interruptReason || "其他";
+    const key = `interrupted:${reason}`;
+    const startedAt = session.startedAt || session.focusEndedAt;
+    if (!interruptGroups.has(key)) {
+      const group = {
+        status: "interrupted",
+        label: focusStatusText(session),
+        latestAt: startedAt,
+        minutes: 0,
+        reason,
+        count: 0,
+      };
+      interruptGroups.set(key, group);
+      rows.push(group);
+    }
+
+    const group = interruptGroups.get(key);
+    group.count += 1;
+    group.minutes += minutes;
+    if (new Date(startedAt).getTime() > new Date(group.latestAt).getTime()) {
+      group.latestAt = startedAt;
+    }
+  });
+
+  return rows.sort((a, b) => new Date(b.latestAt) - new Date(a.latestAt));
+}
+
+function renderFocusHistory(task) {
+  const sessions = sessionsForTask(task.id)
+    .filter((session) => session.focusEndedAt || focusOpenStatuses.has(session.status))
+    .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+  if (!sessions.length) {
+    el.focusHistory.replaceChildren();
+    return;
+  }
+
+  const title = document.createElement("h4");
+  title.textContent = "专注记录";
+  const list = document.createElement("div");
+  list.className = "focus-history-list";
+  buildFocusHistoryRows(sessions)
+    .slice(0, 8)
+    .forEach((row) => {
+      const item = document.createElement("div");
+      item.className = `focus-history-item ${row.status}`;
+      const status = document.createElement("strong");
+      status.textContent = row.status === "interrupted" && row.count > 1 ? `${row.label} x${row.count}` : row.label;
+      const meta = document.createElement("span");
+      const reason = row.reason ? ` · ${row.reason}` : "";
+      meta.textContent = `${formatDateTime(row.latestAt)} · ${formatMinuteText(row.minutes)}${reason}`;
+      item.append(status, meta);
+      list.append(item);
+    });
+
+  el.focusHistory.replaceChildren(title, list);
+}
+
 function renderReport() {
   const tasks = state.tasks
     .filter((task) => task.completedAt)
     .filter((task) => withinRange(task.completedAt, el.reportFrom.value, el.reportTo.value))
     .sort((a, b) => new Date(a.completedAt) - new Date(b.completedAt));
-  const sessions = completedSessionsForRange(el.reportFrom.value, el.reportTo.value);
-  const minutes = sessions.reduce((sum, session) => sum + Number(session.plannedFocusMinutes || 0), 0);
+  const sessions = trackedSessionsForRange(el.reportFrom.value, el.reportTo.value);
+  const completedCount = sessions.filter((session) => focusDoneStatuses.has(session.status)).length;
+  const interruptedCount = sessions.filter((session) => session.status === "interrupted").length;
+  const minutes = sessions.reduce((sum, session) => sum + focusSessionMinutes(session), 0);
   const lines = [`# 周报素材（${el.reportFrom.value || "开始"} 到 ${el.reportTo.value || "今天"}）`, ""];
-  lines.push(`本期完成 ${tasks.length} 项任务，累计 ${sessions.length} 个番茄，约 ${formatHours(minutes)} 小时专注。`, "");
+  lines.push(`本期完成 ${tasks.length} 项任务，完整番茄 ${completedCount} 个，中断 ${interruptedCount} 次，累计约 ${formatHours(minutes)} 小时专注。`, "");
   if (!tasks.length) {
     lines.push("本期还没有已完成事项。");
   } else {
     groupByDate(tasks).forEach(([date, dayTasks]) => {
       lines.push(`## ${date}`);
       dayTasks.forEach((task) => {
-        const focusCount = completedSessionsForTask(task.id).filter((session) => withinRange(session.focusEndedAt || session.startedAt, el.reportFrom.value, el.reportTo.value)).length;
-        lines.push(`- ${task.tag ? `【${task.tag}】` : ""}${task.title}${focusCount ? `（${focusCount} 个番茄）` : ""}`);
+        const taskSessions = trackedSessionsForTask(task.id).filter((session) => withinRange(session.focusEndedAt || session.startedAt, el.reportFrom.value, el.reportTo.value));
+        const focusCount = taskSessions.filter((session) => focusDoneStatuses.has(session.status)).length;
+        const taskMinutes = taskSessions.reduce((sum, session) => sum + focusSessionMinutes(session), 0);
+        lines.push(`- ${task.tag ? `【${task.tag}】` : ""}${task.title}${taskSessions.length ? `（${focusCount} 个番茄，${formatMinuteText(taskMinutes)}）` : ""}`);
         task.comments.forEach((comment) => lines.push(`  - ${formatDateTime(comment.createdAt)}：${comment.text}`));
       });
       lines.push("");
@@ -753,12 +902,47 @@ function completedSessionsForTask(taskId) {
   return state.focusSessions.filter((session) => session.taskId === taskId && focusDoneStatuses.has(session.status));
 }
 
+function sessionsForTask(taskId) {
+  return state.focusSessions.filter((session) => session.taskId === taskId);
+}
+
 function completedSessionsForRange(from, to) {
   return state.focusSessions.filter((session) => focusDoneStatuses.has(session.status)).filter((session) => withinRange(session.focusEndedAt || session.startedAt, from, to));
 }
 
+function trackedSessionsForTask(taskId) {
+  return state.focusSessions.filter((session) => session.taskId === taskId && focusTrackedStatuses.has(session.status));
+}
+
+function trackedSessionsForRange(from, to) {
+  return state.focusSessions.filter((session) => focusTrackedStatuses.has(session.status)).filter((session) => withinRange(session.focusEndedAt || session.startedAt, from, to));
+}
+
 function completedFocusCountForRange(from, to) {
   return completedSessionsForRange(from, to).length;
+}
+
+function totalFocusMinutesForTask(taskId) {
+  return sessionsForTask(taskId).reduce((sum, session) => sum + focusSessionMinutes(session), 0);
+}
+
+function focusSessionMinutes(session) {
+  const start = new Date(session.startedAt).getTime();
+  const endValue = session.focusEndedAt || (focusOpenStatuses.has(session.status) ? new Date().toISOString() : session.startedAt);
+  const end = new Date(endValue).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+  return Math.ceil((end - start) / 60000);
+}
+
+function focusStatusText(session) {
+  if (session.status === "interrupted") return "中断";
+  if (session.status === "task-completed") return "任务完成";
+  if (session.status === "break-ready") return "专注完成";
+  if (session.status === "completed") return "完成休息";
+  if (session.status === "break-skipped") return "跳过休息";
+  if (session.status === "focus-running") return "专注中";
+  if (session.status === "break-running") return "休息中";
+  return "记录";
 }
 
 function focusModeText(session) {
@@ -898,6 +1082,21 @@ function formatDuration(totalSeconds) {
 function formatHours(minutes) {
   const hours = minutes / 60;
   return Number.isInteger(hours) ? String(hours) : hours.toFixed(1);
+}
+
+function formatMinuteText(minutes) {
+  if (minutes < 60) return `${minutes} 分钟`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours} 小时 ${rest} 分钟` : `${hours} 小时`;
+}
+
+function formatCompactMinuteText(minutes) {
+  if (!minutes) return "0分";
+  if (minutes < 60) return `${minutes}分`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}时${rest}分` : `${hours}时`;
 }
 
 function toDateInputValue(date) {
