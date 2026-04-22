@@ -23,4 +23,4 @@ Use the local system Chinese UI stack: Microsoft YaHei, Segoe UI, Arial, sans-se
 - **Task Items:** Dense list cards with clear completion affordance, priority badge, metadata row, and expandable comment area.
 
 ## 5. Layout Principles
-Desktop uses a two-column workbench: left sidebar for capture and counts, right workspace for search, navigation, lists, and reports. Mobile collapses to a single column. The design prioritizes scanning, retrieval, and repeated input over decorative presentation.
+Desktop uses a single-page task desk: identity, date, counts, and capture sit at the top; search, navigation, lists, history filters, and reports sit below in one scanning flow. Mobile remains one column. The design prioritizes fast capture, retrieval, and repeated input over decorative presentation.

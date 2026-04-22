@@ -1,21 +1,23 @@
 :root {
   color-scheme: light;
-  --bg: #eef1f4;
-  --surface: #ffffff;
-  --surface-soft: #f6f8fa;
-  --surface-tint: #edf7f1;
-  --text: #17212b;
-  --text-soft: #3f4b57;
-  --muted: #6c7784;
-  --line: #d8dee5;
-  --primary: #22784f;
-  --primary-dark: #185c3b;
-  --primary-soft: #dff1e7;
-  --amber: #a36318;
-  --red: #b33131;
-  --blue: #286ba8;
+  --bg: #f1f2ee;
+  --surface: #fffdf8;
+  --surface-clear: #ffffff;
+  --surface-soft: #f7f7f2;
+  --surface-tint: #edf6f0;
+  --text: #18222c;
+  --text-soft: #414c57;
+  --muted: #707985;
+  --line: #dadbd2;
+  --line-strong: #c6c8be;
+  --primary: #176f54;
+  --primary-dark: #0f553f;
+  --primary-soft: #dfeee7;
+  --amber: #9d6017;
+  --red: #af3434;
+  --blue: #2c6897;
   --radius: 8px;
-  --shadow: 0 18px 45px rgba(23, 33, 43, 0.08);
+  --shadow: 0 10px 28px rgba(24, 34, 44, 0.08);
 }
 
 * {
@@ -50,19 +52,19 @@ button:disabled {
 }
 
 .shell {
-  width: min(1440px, calc(100% - 32px));
+  width: min(1320px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 24px 0 28px;
+  padding: 22px 0 28px;
 }
 
 .app-layout {
   display: grid;
-  grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 1fr;
+  gap: 16px;
   align-items: start;
 }
 
-.sidebar,
+.capture-panel,
 .content-panel {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -70,10 +72,8 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
-.sidebar {
-  position: sticky;
-  top: 18px;
-  padding: 22px;
+.capture-panel {
+  padding: 22px 26px 24px;
 }
 
 .workspace {
@@ -98,19 +98,31 @@ button:disabled {
 }
 
 .brand-row {
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 h1 {
-  margin: 0 0 8px;
-  max-width: 9em;
-  font-size: clamp(34px, 4.2vw, 54px);
-  line-height: 1.02;
+  margin: 6px 0 7px;
+  max-width: none;
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 1.08;
   letter-spacing: 0;
   text-wrap: balance;
+}
+
+.version-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-soft);
+  padding: 0 10px;
+  font-size: 12px;
 }
 
 #todayLabel {
@@ -120,16 +132,15 @@ h1 {
 }
 
 .stats {
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
-  min-width: 92px;
 }
 
 .stats span {
-  width: 92px;
-  min-height: 76px;
-  padding: 10px 8px;
-  background: var(--surface-soft);
+  width: 104px;
+  min-height: 72px;
+  padding: 10px 12px;
+  background: var(--surface-clear);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   text-align: center;
@@ -146,7 +157,11 @@ h1 {
 
 .task-form {
   display: grid;
-  gap: 14px;
+  grid-template-columns: minmax(240px, 1fr) minmax(280px, 1.15fr) 220px;
+  gap: 12px;
+  align-items: end;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
 }
 
 label {
@@ -175,7 +190,7 @@ select {
 
 textarea {
   resize: vertical;
-  min-height: 92px;
+  min-height: 82px;
   line-height: 1.55;
 }
 
@@ -190,8 +205,8 @@ button:focus-visible {
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 150px;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .primary-button,
@@ -210,7 +225,6 @@ button:focus-visible {
   width: 100%;
   background: var(--primary);
   color: white;
-  grid-column: 1 / -1;
   font-weight: 700;
 }
 
@@ -223,13 +237,13 @@ button:focus-visible {
 .toolbar {
   justify-content: space-between;
   gap: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .tabs {
   gap: 8px;
   padding: 4px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 253, 248, 0.74);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
@@ -251,8 +265,8 @@ button:focus-visible {
 }
 
 .content-panel {
-  min-height: 580px;
-  padding: 18px;
+  min-height: 560px;
+  padding: 16px;
 }
 
 .view {
@@ -269,7 +283,7 @@ button:focus-visible {
 }
 
 .task-item {
-  background: var(--surface);
+  background: var(--surface-clear);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
@@ -278,7 +292,7 @@ button:focus-visible {
 .task-main {
   gap: 12px;
   align-items: flex-start;
-  padding: 14px;
+  padding: 14px 15px;
 }
 
 .check-button {
@@ -387,7 +401,7 @@ button:focus-visible {
 .done-comment {
   border-top: 1px solid var(--line);
   background: var(--surface-soft);
-  padding: 14px 14px 14px 64px;
+  padding: 14px 15px 15px 65px;
 }
 
 .new-comment {
@@ -448,8 +462,10 @@ button:focus-visible {
   gap: 10px;
   margin-bottom: 14px;
   flex-wrap: wrap;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
 }
 
 .history-tools label,
@@ -499,9 +515,13 @@ button:focus-visible {
 }
 
 .empty {
-  margin: 42px 0;
+  margin: 36px 0;
   color: var(--muted);
   text-align: center;
+  background: var(--surface-soft);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: 28px;
 }
 
 .report-output {
@@ -514,7 +534,7 @@ button:focus-visible {
   justify-content: flex-end;
   gap: 14px;
   flex-wrap: wrap;
-  margin-top: 14px;
+  margin-top: 10px;
   color: var(--muted);
 }
 
@@ -535,35 +555,19 @@ button:focus-visible {
   display: none;
 }
 
-@media (max-width: 980px) {
-  .app-layout {
+@media (max-width: 920px) {
+  .task-form {
     grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: static;
-  }
-
-  .brand-row {
-    align-items: center;
-  }
-
-  h1 {
-    max-width: none;
-  }
-
-  .stats {
-    flex-direction: row;
   }
 }
 
 @media (max-width: 720px) {
   .shell {
-    width: min(100% - 20px, 1440px);
+    width: min(100% - 20px, 1320px);
     padding-top: 12px;
   }
 
-  .sidebar,
+  .capture-panel,
   .content-panel {
     padding: 14px;
   }
@@ -592,10 +596,6 @@ button:focus-visible {
   .stats span,
   .tab {
     flex: 1;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
   }
 
   .search {
