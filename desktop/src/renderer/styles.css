@@ -293,6 +293,36 @@ textarea {
   margin-bottom: 14px;
 }
 
+.priority-filter-group {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.priority-filter-group > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.priority-filter {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink-soft);
+  padding: 0 10px;
+  text-align: left;
+}
+
+.priority-filter.active {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
 .filter-group {
   display: grid;
   gap: 10px;
@@ -395,14 +425,24 @@ textarea {
   font-size: 12px;
 }
 
-.priority.high {
+.priority.important-urgent {
   background: #fff0dc;
   color: var(--amber);
 }
 
-.priority.low {
+.priority.important-not-urgent {
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.priority.not-important-urgent {
   background: #e8f1fb;
   color: var(--blue);
+}
+
+.priority.not-important-not-urgent {
+  background: var(--panel);
+  color: var(--muted);
 }
 
 .period-header {

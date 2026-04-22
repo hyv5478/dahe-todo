@@ -63,7 +63,7 @@ app.on("window-all-closed", () => {
 
 function registerIpc() {
   ipcMain.handle("app:info", () => ({
-    version: "v0.3.0-desktop-alpha",
+    version: "v0.3.2-priority-quadrants",
     appName: appConfig.appName,
     dataFile: store.info().dataFile,
     dataDir: store.info().dataDir,
@@ -173,7 +173,7 @@ function applyAppMenu() {
           type: "info",
           title: `关于 ${appConfig.appName}`,
           message: appConfig.appName,
-          detail: `版本：v0.3.0-desktop-alpha\n数据文件：${store.info().dataFile}`,
+          detail: `版本：v0.3.2-priority-quadrants\n数据文件：${store.info().dataFile}`,
         }) },
       ],
     },

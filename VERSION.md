@@ -41,3 +41,11 @@ Desktop configuration pass.
 - App title/project name is configurable
 - Data storage folder is configurable
 - Settings persist in Electron user data config
+
+## v0.3.2-priority-quadrants
+
+Desktop priority classification pass.
+
+- Replaced old high/normal/low priority with four Eisenhower-style categories
+- Added active-task priority filter tabs: all plus four priority categories
+- Migrates old priorities automatically: high, normal, low

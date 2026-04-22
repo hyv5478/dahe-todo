@@ -42,9 +42,10 @@
           <label>
             <span>优先级</span>
             <select id="taskPriority">
-              <option value="normal">普通</option>
-              <option value="high">紧急</option>
-              <option value="low">稍后</option>
+              <option value="important-urgent">重要紧急</option>
+              <option value="important-not-urgent">重要不紧急</option>
+              <option value="not-important-urgent">不重要紧急</option>
+              <option value="not-important-not-urgent">不重要不紧急</option>
             </select>
           </label>
           <button class="primary-button" type="submit">添加</button>
@@ -69,6 +70,15 @@
             <span>全局搜索</span>
             <input id="searchInput" type="search" placeholder="事情 / 评论 / 分组" />
           </label>
+
+          <div id="priorityFilters" class="priority-filter-group" aria-label="优先级分类">
+            <span>优先级分类</span>
+            <button class="priority-filter active" type="button" data-priority-filter="all">全部</button>
+            <button class="priority-filter" type="button" data-priority-filter="important-urgent">重要紧急</button>
+            <button class="priority-filter" type="button" data-priority-filter="important-not-urgent">重要不紧急</button>
+            <button class="priority-filter" type="button" data-priority-filter="not-important-urgent">不重要紧急</button>
+            <button class="priority-filter" type="button" data-priority-filter="not-important-not-urgent">不重要不紧急</button>
+          </div>
 
           <div id="historyFilters" class="filter-group hidden">
             <label>

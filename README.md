@@ -19,7 +19,7 @@
 
 ## 版本
 
-- 桌面端：`v0.3.1-desktop-settings`
+- 桌面端：`v0.3.2-priority-quadrants`
 - 浏览器本地版：保留在仓库根目录
 
 ## 桌面端使用
@@ -49,7 +49,7 @@ npm.cmd run dist
 打包输出：
 
 ```text
-desktop/release/大何的待办事项 Setup 0.3.1.exe
+desktop/release/大何的待办事项 Setup 0.3.2.exe
 ```
 
 ## 数据位置

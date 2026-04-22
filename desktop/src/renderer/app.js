@@ -3,6 +3,7 @@ const state = {
   view: "active",
   selectedId: null,
   search: "",
+  priorityFilter: "all",
   info: null,
 };
 
@@ -20,6 +21,8 @@ const el = {
   doneCount: document.querySelector("#doneCount"),
   viewTabs: document.querySelectorAll(".view-tab"),
   searchInput: document.querySelector("#searchInput"),
+  priorityFilters: document.querySelector("#priorityFilters"),
+  priorityFilterButtons: document.querySelectorAll(".priority-filter"),
   historyFilters: document.querySelector("#historyFilters"),
   historyFrom: document.querySelector("#historyFrom"),
   historyTo: document.querySelector("#historyTo"),
@@ -59,7 +62,25 @@ const el = {
   settingDataDir: document.querySelector("#settingDataDir"),
 };
 
-const priorityText = { high: "紧急", normal: "普通", low: "稍后" };
+const priorityOptions = [
+  "important-urgent",
+  "important-not-urgent",
+  "not-important-urgent",
+  "not-important-not-urgent",
+];
+
+const priorityText = {
+  "important-urgent": "重要紧急",
+  "important-not-urgent": "重要不紧急",
+  "not-important-urgent": "不重要紧急",
+  "not-important-not-urgent": "不重要不紧急",
+};
+
+const legacyPriorityMap = {
+  high: "important-urgent",
+  normal: "important-not-urgent",
+  low: "not-important-not-urgent",
+};
 
 init();
 
@@ -81,6 +102,15 @@ function bindEvents() {
     button.addEventListener("click", () => {
       state.view = button.dataset.view;
       if (state.view === "report") state.selectedId = null;
+      if (state.view !== "active") state.priorityFilter = "all";
+      render();
+    });
+  });
+
+  el.priorityFilterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.priorityFilter = button.dataset.priorityFilter;
+      state.view = "active";
       render();
     });
   });
@@ -136,7 +166,7 @@ function addTask() {
   state.selectedId = task.id;
   state.view = "active";
   el.taskForm.reset();
-  el.taskPriority.value = "normal";
+  el.taskPriority.value = "important-urgent";
   el.taskTitle.focus();
   save();
   render();
@@ -243,6 +273,10 @@ function renderTags() {
 function renderTabs() {
   el.viewTabs.forEach((button) => button.classList.toggle("active", button.dataset.view === state.view));
   el.historyFilters.classList.toggle("hidden", state.view !== "history");
+  el.priorityFilters.classList.toggle("hidden", state.view !== "active" || Boolean(state.search));
+  el.priorityFilterButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.priorityFilter === state.priorityFilter);
+  });
 }
 
 function visibleTasks() {
@@ -251,6 +285,9 @@ function visibleTasks() {
     tasks = tasks.filter(matchesSearch);
   } else if (state.view === "active") {
     tasks = tasks.filter((task) => !task.completedAt);
+    if (state.priorityFilter !== "all") {
+      tasks = tasks.filter((task) => task.priority === state.priorityFilter);
+    }
   } else if (state.view === "history") {
     tasks = tasks
       .filter((task) => task.completedAt)
@@ -266,7 +303,8 @@ function renderList() {
   const tasks = visibleTasks();
   const listTitle = state.search ? "搜索结果" : ({ active: "待办", history: "历史", report: "周报素材" }[state.view] || "事项");
   el.listTitle.textContent = listTitle;
-  el.listSummary.textContent = state.search ? `找到 ${tasks.length} 条` : `${tasks.length} 条`;
+  const filterText = state.view === "active" && !state.search && state.priorityFilter !== "all" ? ` · ${priorityText[state.priorityFilter]}` : "";
+  el.listSummary.textContent = state.search ? `找到 ${tasks.length} 条` : `${tasks.length} 条${filterText}`;
   el.taskList.replaceChildren();
   el.emptyList.hidden = tasks.length > 0;
 
@@ -492,11 +530,17 @@ function normalizeTask(task) {
     title: String(task.title),
     note: task.note ? String(task.note) : "",
     tag: task.tag ? String(task.tag) : "",
-    priority: ["high", "normal", "low"].includes(task.priority) ? task.priority : "normal",
+    priority: normalizePriority(task.priority),
     createdAt: task.createdAt || new Date().toISOString(),
     completedAt: task.completedAt || null,
     comments: Array.isArray(task.comments) ? task.comments.map(normalizeComment).filter(Boolean) : [],
   };
+}
+
+function normalizePriority(priority) {
+  if (priorityOptions.includes(priority)) return priority;
+  if (legacyPriorityMap[priority]) return legacyPriorityMap[priority];
+  return "important-not-urgent";
 }
 
 function normalizeComment(comment) {
