@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>大何的待办事项</title>
+    <title>大何的待办事项 | 本地优先的 Windows 待办工具</title>
     <meta
       name="description"
-      content="本地优先的 Windows 待办工具，适合大量琐碎事项、临时插入任务、完成评论和周报素材整理。"
+      content="本地优先的 Windows 待办工具，支持快速收集、番茄钟、每周成就、完成备注、优先级四象限和周报素材整理。"
     />
     <link rel="alternate" hreflang="zh-CN" href="https://hyv5478.github.io/dahe-todo/" />
     <link rel="alternate" hreflang="en" href="https://hyv5478.github.io/dahe-todo/en.html" />
@@ -15,7 +15,7 @@
   <body>
     <header class="hero">
       <nav class="topbar">
-        <a class="brand" href="#">大何的待办事项</a>
+        <a class="brand" href="#">Dahe Todo</a>
         <div class="nav-cluster">
           <div class="language-switch" aria-label="语言切换">
             <strong>简体中文</strong>
@@ -23,87 +23,127 @@
             <a href="en.html" lang="en">English</a>
           </div>
           <div class="nav-links">
-            <a href="#features">功能</a>
-            <a href="#desktop">桌面端</a>
-            <a href="#privacy">本地存储</a>
-            <a href="#start">开始使用</a>
+            <a href="#highlights">亮点</a>
+            <a href="#matrix">能力矩阵</a>
+            <a href="#privacy">隐私</a>
+            <a href="#release">下载</a>
+            <a href="#develop">开发</a>
           </div>
         </div>
       </nav>
 
       <div class="hero-grid">
         <section class="hero-copy">
-          <p class="eyebrow">Windows 本地待办 · 桌面软件 · 周报素材</p>
+          <div class="badge-row" aria-label="项目状态">
+            <span>Windows</span>
+            <span>v0.5.0</span>
+            <span>Local First</span>
+            <span>MIT</span>
+          </div>
+          <p class="eyebrow">本地优先 · 快速收集 · 番茄钟 · 每周成就</p>
           <h1>把突然插进来的琐事，稳稳接住。</h1>
           <p class="lead">
-            一个轻量的本地待办工具：随手记录、完成打钩、追加评论、按时间和优先级回看，最后把完成过程整理成周报素材。
+            大何的待办事项是一个面向办公场景的 Windows 桌面待办工具：随手记录、专注番茄、完成备注、按周复盘，并把过程沉淀成可复制的周报素材。
           </p>
           <div class="hero-actions">
-            <a class="primary-link" href="#start">下载桌面版</a>
+            <a class="primary-link" href="#release">下载 v0.5.0</a>
             <a class="secondary-link" href="https://github.com/hyv5478/dahe-todo" target="_blank" rel="noreferrer">查看 GitHub</a>
           </div>
         </section>
 
         <figure class="preview-frame">
-          <img src="assets/desktop-preview.svg" alt="大何的待办事项桌面端界面预览" />
+          <img src="assets/desktop-preview.svg" alt="大何的待办事项 v0.5.0 桌面端界面预览" />
         </figure>
       </div>
     </header>
 
     <main>
-      <section id="features" class="section">
+      <section id="highlights" class="section">
         <div class="section-head">
-          <p class="eyebrow">核心功能</p>
-          <h2>为琐碎、插队、容易忘的工作流设计。</h2>
+          <p class="eyebrow">v0.5.0 亮点</p>
+          <h2>从“记录事情”升级到“看见本周投入”。</h2>
         </div>
-        <div class="feature-grid">
+        <div class="feature-grid three">
           <article>
-            <h3>快速收集</h3>
-            <p>事情冒出来时先记下来，不要求你立刻想清楚结构，降低打断当前工作的成本。</p>
+            <span class="card-kicker">Focus</span>
+            <h3>任务绑定番茄钟</h3>
+            <p>给当前事项开启专注，记录完整番茄、中断原因、累计时间和今日投入。</p>
           </article>
           <article>
-            <h3>完成后追加评论</h3>
-            <p>办完后可以多次补充过程、结果、原因和影响，后续整理周报时不用重新翻记忆。</p>
+            <span class="card-kicker">Achievement</span>
+            <h3>每周成就系统</h3>
+            <p>按周自动解锁“本周起步”“稳住节奏”“闭环大师”等成就，为复盘提供正反馈。</p>
           </article>
           <article>
-            <h3>优先级四象限</h3>
-            <p>支持重要紧急、重要不紧急、不重要紧急、不重要不紧急，并能在待办页直接筛选。</p>
-          </article>
-          <article>
-            <h3>历史和周报</h3>
-            <p>保留创建时间、完成时间和评论记录，按周或月回看，快速形成周报素材。</p>
+            <span class="card-kicker">Report</span>
+            <h3>周报素材增强</h3>
+            <p>周报自动汇总完成事项、评论、专注时长、中断次数和本期成就。</p>
           </article>
         </div>
       </section>
 
-      <section id="desktop" class="section split">
-        <div>
-          <p class="eyebrow">桌面端</p>
-          <h2>不用浏览器，也能像普通软件一样打开。</h2>
+      <section id="matrix" class="section matrix-section">
+        <div class="section-head">
+          <p class="eyebrow">能力矩阵</p>
+          <h2>不是大而全，而是围绕“容易被打断的人”做完整闭环。</h2>
         </div>
-        <p>
-          桌面版基于 Electron 构建，支持安装到 Windows 10。本地数据位置可配置，应用名称也可配置，后续开源给其他人使用时不绑定个人名字。
-        </p>
+        <div class="matrix-grid">
+          <article>
+            <h3>捕获</h3>
+            <p>快速录入事项、补充信息、分组和优先级，先写下来，避免靠脑子硬记。</p>
+          </article>
+          <article>
+            <h3>执行</h3>
+            <p>四象限优先级筛选，专注番茄约束当前任务，插入事项自动进入重要紧急。</p>
+          </article>
+          <article>
+            <h3>沉淀</h3>
+            <p>完成后可追加多条评论，保留创建时间、办理时间、专注记录和中断记录。</p>
+          </article>
+          <article>
+            <h3>复盘</h3>
+            <p>历史按周/月分类，周报生成素材，成就系统把本周投入变成可见反馈。</p>
+          </article>
+        </div>
       </section>
 
       <section id="privacy" class="section split">
         <div>
-          <p class="eyebrow">本地优先</p>
-          <h2>数据默认留在你的电脑里。</h2>
+          <p class="eyebrow">数据与隐私</p>
+          <h2>默认不联网，不上传，不需要账号。</h2>
         </div>
-        <p>
-          待办数据默认写入 <code>Documents/DaheTodo/tasks.json</code>，也可以在设置里更换目录。仓库已经加入隐私检查，避免把本地任务数据、安装包、缓存和工具目录提交到 GitHub。
-        </p>
+        <div class="copy-stack">
+          <p>
+            桌面端默认写入 <code>%USERPROFILE%\Documents\DaheTodo</code>，其中 `tasks.json` 保存待办，`focus-sessions.json` 保存专注记录，`achievements.json` 保存成就解锁记录。
+          </p>
+          <p>
+            仓库内置隐私检查和 pre-push 钩子，避免本地任务数据、安装包、依赖缓存和工具目录被误提交到 GitHub。
+          </p>
+        </div>
       </section>
 
-      <section id="start" class="section start-card">
-        <p class="eyebrow">开始使用</p>
-        <h2>下载、安装，然后直接记录。</h2>
-        <ol>
-          <li>进入 GitHub Releases 下载 Windows 安装包。</li>
-          <li>安装后打开桌面版，先在设置里确认数据存储位置。</li>
-          <li>新增待办，完成后追加评论，周报页会帮你汇总素材。</li>
-        </ol>
+      <section id="release" class="section release-card">
+        <div>
+          <p class="eyebrow">下载发布</p>
+          <h2>Windows 安装包</h2>
+          <p>当前发布版本：<strong>v0.5.0-achievements</strong></p>
+        </div>
+        <div class="release-actions">
+          <a class="primary-link" href="https://github.com/hyv5478/dahe-todo/releases/latest" target="_blank" rel="noreferrer">前往 Releases</a>
+          <a class="secondary-link" href="https://github.com/hyv5478/dahe-todo" target="_blank" rel="noreferrer">查看源码</a>
+        </div>
+      </section>
+
+      <section id="develop" class="section split">
+        <div>
+          <p class="eyebrow">开发者</p>
+          <h2>Electron 桌面端，JSON 本地存储。</h2>
+        </div>
+        <div class="code-panel">
+          <code>cd desktop</code>
+          <code>npm.cmd run check</code>
+          <code>npm.cmd run dist</code>
+        </div>
       </section>
     </main>
   </body>

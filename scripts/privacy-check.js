@@ -10,6 +10,8 @@ const blockedPathPatterns = [
   /^tmp_pdf_pages\//,
   /^tmp_.*\.txt$/i,
   /(^|\/)tasks\.json$/i,
+  /(^|\/)focus-sessions\.json$/i,
+  /(^|\/)achievements\.json$/i,
   /(^|\/).*\.sqlite$/i,
   /(^|\/).*\.db$/i,
 ];

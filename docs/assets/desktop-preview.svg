@@ -3,24 +3,26 @@
   <rect x="48" y="48" width="1184" height="724" rx="22" fill="#fffdf8" stroke="#d6ccba"/>
 
   <rect x="72" y="74" width="1136" height="86" rx="14" fill="#1c242d"/>
-  <text x="96" y="111" fill="#dfeee7" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="18">桌面端 · v0.3.2</text>
+  <text x="96" y="111" fill="#dfeee7" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="18">桌面端 · v0.5.0-achievements</text>
   <text x="96" y="143" fill="#ffffff" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="32" font-weight="700">大何的待办事项</text>
   <rect x="944" y="94" width="82" height="42" rx="10" fill="#fffdf8"/>
   <text x="969" y="121" fill="#1c242d" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16">设置</text>
   <rect x="1040" y="94" width="124" height="42" rx="10" fill="#dfeee7"/>
   <text x="1061" y="121" fill="#176f54" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16">数据文件夹</text>
 
-  <rect x="72" y="184" width="1136" height="106" rx="16" fill="#f7f4eb" stroke="#d9d3c7"/>
+  <rect x="72" y="184" width="1136" height="128" rx="16" fill="#f7f4eb" stroke="#d9d3c7"/>
   <text x="96" y="220" fill="#1c242d" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="22" font-weight="700">快速收集</text>
   <text x="96" y="249" fill="#757b80" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="15">先写下来，别靠脑子硬记</text>
-  <rect x="360" y="210" width="300" height="46" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
-  <text x="382" y="239" fill="#707985" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16">事情</text>
-  <rect x="678" y="210" width="280" height="46" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
-  <text x="700" y="239" fill="#707985" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16">地点、对象、下一步</text>
-  <rect x="976" y="210" width="100" height="46" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
-  <text x="999" y="239" fill="#1c242d" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16">优先级</text>
-  <rect x="1092" y="210" width="92" height="46" rx="10" fill="#176f54"/>
-  <text x="1122" y="239" fill="#ffffff" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" font-weight="700">添加</text>
+  <rect x="360" y="200" width="824" height="42" rx="10" fill="#eff7f3" stroke="#d9d3c7"/>
+  <text x="382" y="226" fill="#0f543f" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="15" font-weight="700">本周成就 4/8 · 番茄 6 · 专注 0.6 小时 · 完成 3</text>
+  <rect x="360" y="254" width="300" height="40" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="382" y="279" fill="#707985" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="15">事情</text>
+  <rect x="678" y="254" width="280" height="40" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="700" y="279" fill="#707985" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="15">地点、对象、下一步</text>
+  <rect x="976" y="254" width="100" height="40" rx="10" fill="#ffffff" stroke="#d9d3c7"/>
+  <text x="999" y="279" fill="#1c242d" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="15">优先级</text>
+  <rect x="1092" y="254" width="92" height="40" rx="10" fill="#176f54"/>
+  <text x="1122" y="279" fill="#ffffff" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="15" font-weight="700">添加</text>
 
   <rect x="72" y="314" width="212" height="416" rx="16" fill="#fffdf8" stroke="#d9d3c7"/>
   <rect x="96" y="340" width="72" height="72" rx="12" fill="#f8f5ed" stroke="#d9d3c7"/>

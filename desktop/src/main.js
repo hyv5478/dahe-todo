@@ -3,7 +3,7 @@ const path = require("path");
 const { createDataStore } = require("./data-store");
 const { createConfigStore } = require("./config-store");
 
-const APP_VERSION = "v0.4.1-focus-completion";
+const APP_VERSION = "v0.5.0-achievements";
 
 let mainWindow;
 let store;
@@ -67,6 +67,7 @@ function appInfo() {
     dataFile: store.info().dataFile,
     dataDir: store.info().dataDir,
     focusFile: store.info().focusFile,
+    achievementsFile: store.info().achievementsFile,
     configFile: configStore.configFile,
     focusMinutes: appConfig.focusMinutes,
     breakMinutes: appConfig.breakMinutes,
@@ -80,6 +81,8 @@ function registerIpc() {
   ipcMain.handle("tasks:save", (_event, tasks) => store.saveTasks(tasks));
   ipcMain.handle("focus:load", () => store.loadFocusSessions());
   ipcMain.handle("focus:save", (_event, sessions) => store.saveFocusSessions(sessions));
+  ipcMain.handle("achievements:load", () => store.loadAchievements());
+  ipcMain.handle("achievements:save", (_event, achievements) => store.saveAchievements(achievements));
 
   ipcMain.handle("notify:focus-ended", (_event, payload) => {
     if (!appConfig.notifyOnFocusEnd || !Notification.isSupported()) return false;
@@ -106,7 +109,7 @@ function registerIpc() {
     return result.filePaths[0];
   });
 
-  ipcMain.handle("settings:save", (_event, nextConfig, tasks, focusSessions) => {
+  ipcMain.handle("settings:save", (_event, nextConfig, tasks, focusSessions, achievements) => {
     const normalized = configStore.write({
       appName: nextConfig.appName,
       dataDir: nextConfig.dataDir,
@@ -115,7 +118,7 @@ function registerIpc() {
       notifyOnFocusEnd: nextConfig.notifyOnFocusEnd,
     });
     appConfig = normalized;
-    store.setDataDir(normalized.dataDir, tasks, focusSessions);
+    store.setDataDir(normalized.dataDir, tasks, focusSessions, achievements);
     if (mainWindow) mainWindow.setTitle(appConfig.appName);
     return appInfo();
   });
@@ -190,7 +193,7 @@ function applyAppMenu() {
             type: "info",
             title: `关于 ${appConfig.appName}`,
             message: appConfig.appName,
-            detail: `版本：${APP_VERSION}\n数据文件：${store.info().dataFile}\n专注记录：${store.info().focusFile}`,
+            detail: `版本：${APP_VERSION}\n数据文件：${store.info().dataFile}\n专注记录：${store.info().focusFile}\n成就记录：${store.info().achievementsFile}`,
           }),
         },
       ],

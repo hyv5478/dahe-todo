@@ -5,12 +5,14 @@ function createDataStore(options) {
   let dataDir = options.dataDir;
   let tasksFile = path.join(dataDir, "tasks.json");
   let focusFile = path.join(dataDir, "focus-sessions.json");
+  let achievementsFile = path.join(dataDir, "achievements.json");
   const legacyFiles = [options.legacyFile, ...(options.legacyFiles || [])].filter(Boolean);
 
   function ensure() {
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
     ensureTasksFile();
     ensureFocusFile();
+    ensureAchievementsFile();
   }
 
   function ensureTasksFile() {
@@ -25,6 +27,12 @@ function createDataStore(options) {
   function ensureFocusFile() {
     if (!fs.existsSync(focusFile)) {
       fs.writeFileSync(focusFile, "[]", "utf8");
+    }
+  }
+
+  function ensureAchievementsFile() {
+    if (!fs.existsSync(achievementsFile)) {
+      fs.writeFileSync(achievementsFile, "[]", "utf8");
     }
   }
 
@@ -60,13 +68,26 @@ function createDataStore(options) {
     return { dataFile: focusFile, count: sessions.length };
   }
 
+  function loadAchievements() {
+    ensure();
+    return readJsonArray(achievementsFile) || [];
+  }
+
+  function saveAchievements(achievements) {
+    ensure();
+    if (!Array.isArray(achievements)) throw new Error("achievements must be an array");
+    fs.writeFileSync(achievementsFile, JSON.stringify(achievements, null, 2), "utf8");
+    return { dataFile: achievementsFile, count: achievements.length };
+  }
+
   function exportTo(filePath) {
     ensure();
     const payload = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       exportedAt: new Date().toISOString(),
       tasks: loadTasks(),
       focusSessions: loadFocusSessions(),
+      achievements: loadAchievements(),
     };
     fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), "utf8");
     return filePath;
@@ -77,26 +98,31 @@ function createDataStore(options) {
     if (!parsed) throw new Error("import file must be valid JSON");
     const tasks = Array.isArray(parsed) ? parsed : parsed.tasks;
     const focusSessions = Array.isArray(parsed.focusSessions) ? parsed.focusSessions : [];
+    const achievements = Array.isArray(parsed.achievements) ? parsed.achievements : [];
     if (!Array.isArray(tasks)) throw new Error("import file must include a task array");
     saveTasks(tasks);
     saveFocusSessions(focusSessions);
-    return { tasks, focusSessions };
+    saveAchievements(achievements);
+    return { tasks, focusSessions, achievements };
   }
 
-  function setDataDir(nextDataDir, tasksToCarry, focusSessionsToCarry) {
+  function setDataDir(nextDataDir, tasksToCarry, focusSessionsToCarry, achievementsToCarry) {
     const tasks = Array.isArray(tasksToCarry) ? tasksToCarry : loadTasks();
     const focusSessions = Array.isArray(focusSessionsToCarry) ? focusSessionsToCarry : loadFocusSessions();
+    const achievements = Array.isArray(achievementsToCarry) ? achievementsToCarry : loadAchievements();
     dataDir = nextDataDir;
     tasksFile = path.join(dataDir, "tasks.json");
     focusFile = path.join(dataDir, "focus-sessions.json");
+    achievementsFile = path.join(dataDir, "achievements.json");
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
     fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2), "utf8");
     fs.writeFileSync(focusFile, JSON.stringify(focusSessions, null, 2), "utf8");
-    return { dataDir, tasksFile, focusFile, taskCount: tasks.length, focusCount: focusSessions.length };
+    fs.writeFileSync(achievementsFile, JSON.stringify(achievements, null, 2), "utf8");
+    return { dataDir, tasksFile, focusFile, achievementsFile, taskCount: tasks.length, focusCount: focusSessions.length, achievementCount: achievements.length };
   }
 
   function info() {
-    return { dataDir, dataFile: tasksFile, tasksFile, focusFile };
+    return { dataDir, dataFile: tasksFile, tasksFile, focusFile, achievementsFile };
   }
 
   return {
@@ -107,6 +133,8 @@ function createDataStore(options) {
     saveTasks,
     loadFocusSessions,
     saveFocusSessions,
+    loadAchievements,
+    saveAchievements,
     importFrom,
     exportTo,
     setDataDir,

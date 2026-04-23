@@ -1,6 +1,7 @@
 const state = {
   tasks: [],
   focusSessions: [],
+  achievements: [],
   view: "active",
   selectedId: null,
   search: "",
@@ -23,6 +24,11 @@ const el = {
   activeCount: document.querySelector("#activeCount"),
   doneCount: document.querySelector("#doneCount"),
   todayFocusCount: document.querySelector("#todayFocusCount"),
+  achievementScore: document.querySelector("#achievementScore"),
+  weekFocusCount: document.querySelector("#weekFocusCount"),
+  weekFocusHours: document.querySelector("#weekFocusHours"),
+  weekTaskCount: document.querySelector("#weekTaskCount"),
+  achievementList: document.querySelector("#achievementList"),
   viewTabs: document.querySelectorAll(".view-tab"),
   searchInput: document.querySelector("#searchInput"),
   priorityFilters: document.querySelector("#priorityFilters"),
@@ -114,12 +120,72 @@ const focusDoneStatuses = new Set(["break-ready", "completed", "break-skipped", 
 const focusOpenStatuses = new Set(["focus-running", "break-ready", "break-running"]);
 const focusTrackedStatuses = new Set(["break-ready", "completed", "break-skipped", "task-completed", "interrupted"]);
 
+const achievementDefinitions = [
+  {
+    id: "week-start",
+    title: "本周起步",
+    summary: "完成 1 个完整番茄",
+    report: "本周已经启动专注节奏，完成了第 1 个番茄。",
+    isUnlocked: (stats) => stats.completedFocus >= 1,
+  },
+  {
+    id: "steady-five",
+    title: "稳住节奏",
+    summary: "完成 5 个完整番茄",
+    report: "本周完成 5 个以上完整番茄，工作节奏开始稳定。",
+    isUnlocked: (stats) => stats.completedFocus >= 5,
+  },
+  {
+    id: "deep-two-hours",
+    title: "专注半日",
+    summary: "累计专注 2 小时",
+    report: "本周累计专注超过 2 小时，适合写进周报的投入证明。",
+    isUnlocked: (stats) => stats.focusMinutes >= 120,
+  },
+  {
+    id: "closed-loop",
+    title: "闭环大师",
+    summary: "完成任务并写完成备注",
+    report: "本周有任务完成后补充了备注，周报素材更完整。",
+    isUnlocked: (stats) => stats.tasksWithComments >= 1,
+  },
+  {
+    id: "report-ready",
+    title: "周报素材充足",
+    summary: "本周完成备注达到 5 条",
+    report: "本周沉淀了 5 条以上完成备注，周报整理压力下降。",
+    isUnlocked: (stats) => stats.commentCount >= 5,
+  },
+  {
+    id: "firefighter",
+    title: "救火队长",
+    summary: "完成 3 个重要紧急事项",
+    report: "本周处理了多个重要紧急事项，临场问题有闭环。",
+    isUnlocked: (stats) => stats.urgentDone >= 3,
+  },
+  {
+    id: "interruption-handler",
+    title: "插入事项处理者",
+    summary: "完成番茄中断生成的事项",
+    report: "本周把中断产生的插入事项也处理掉了，打断没有丢在脑子里。",
+    isUnlocked: (stats) => stats.completedInserted >= 1,
+  },
+  {
+    id: "comeback",
+    title: "被打断也回来",
+    summary: "有中断，也有完整番茄",
+    report: "本周虽然出现中断，但仍然完成了番茄，节奏没有散掉。",
+    isUnlocked: (stats) => stats.interruptedFocus >= 1 && stats.completedFocus >= 1,
+  },
+];
+
 init();
 
 async function init() {
   state.info = await window.daheTodo.appInfo();
   state.tasks = (await window.daheTodo.loadTasks()).map(normalizeTask).filter(Boolean);
   state.focusSessions = (await window.daheTodo.loadFocusSessions()).map(normalizeFocusSession).filter(Boolean);
+  state.achievements = (await window.daheTodo.loadAchievements()).map(normalizeAchievement).filter(Boolean);
   state.activeFocusId = findOpenFocusSession()?.id || null;
   setDefaultReportRange();
   bindEvents();
@@ -197,6 +263,10 @@ async function saveTasks() {
 
 async function saveFocusSessions() {
   await window.daheTodo.saveFocusSessions(state.focusSessions);
+}
+
+async function saveAchievements() {
+  await window.daheTodo.saveAchievements(state.achievements);
 }
 
 function addTask() {
@@ -465,8 +535,10 @@ async function importData() {
   if (!imported) return;
   const tasks = Array.isArray(imported) ? imported : imported.tasks;
   const focusSessions = Array.isArray(imported.focusSessions) ? imported.focusSessions : [];
+  const achievements = Array.isArray(imported.achievements) ? imported.achievements : [];
   state.tasks = tasks.map(normalizeTask).filter(Boolean);
   state.focusSessions = focusSessions.map(normalizeFocusSession).filter(Boolean);
+  state.achievements = achievements.map(normalizeAchievement).filter(Boolean);
   state.activeFocusId = findOpenFocusSession()?.id || null;
   state.selectedId = null;
   render();
@@ -476,10 +548,11 @@ function render() {
   el.versionLabel.textContent = `桌面端 · ${state.info.version}`;
   el.appNameTitle.textContent = state.info.appName;
   document.title = state.info.appName;
-  el.dataPath.textContent = `${state.info.dataFile} · 专注记录 ${state.info.focusFile}`;
+  el.dataPath.textContent = `${state.info.dataFile} · 专注记录 ${state.info.focusFile} · 成就 ${state.info.achievementsFile}`;
   renderCounts();
   renderTags();
   renderTabs();
+  renderAchievements();
   renderList();
   renderDetail();
   renderReport();
@@ -518,7 +591,7 @@ async function saveSettings() {
     focusMinutes: Number(el.settingFocusMinutes.value),
     breakMinutes: Number(el.settingBreakMinutes.value),
     notifyOnFocusEnd: el.settingNotify.checked,
-  }, state.tasks, state.focusSessions);
+  }, state.tasks, state.focusSessions, state.achievements);
   closeSettings();
   render();
 }
@@ -527,6 +600,73 @@ function renderCounts() {
   el.activeCount.textContent = state.tasks.filter((task) => !task.completedAt).length;
   el.doneCount.textContent = state.tasks.filter((task) => task.completedAt).length;
   el.todayFocusCount.textContent = completedFocusCountForRange(todayStart(), todayEnd());
+}
+
+function renderAchievements() {
+  const week = weekRange(new Date());
+  const stats = buildWeeklyAchievementStats(week.start, week.end);
+  const unlocked = syncAchievementUnlocks(week.id, stats);
+  el.achievementScore.textContent = `${unlocked.length}/${achievementDefinitions.length}`;
+  el.weekFocusCount.textContent = stats.completedFocus;
+  el.weekFocusHours.textContent = formatHours(stats.focusMinutes);
+  el.weekTaskCount.textContent = stats.completedTasks;
+
+  el.achievementList.replaceChildren(...achievementDefinitions.map((definition) => {
+    const record = unlocked.find((item) => item.id === definition.id);
+    const item = document.createElement("div");
+    item.className = `achievement-item ${record ? "unlocked" : "locked"}`;
+    item.title = record ? `${definition.report}\n解锁时间：${formatDateTime(record.unlockedAt)}` : definition.summary;
+
+    const badge = document.createElement("span");
+    badge.className = "achievement-badge";
+    badge.textContent = record ? "✓" : "·";
+
+    const body = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = definition.title;
+    const summary = document.createElement("span");
+    summary.textContent = record ? `已解锁 · ${definition.summary}` : definition.summary;
+    body.append(title, summary);
+
+    item.append(badge, body);
+    return item;
+  }));
+}
+
+function buildWeeklyAchievementStats(from, to) {
+  const tasks = state.tasks.filter((task) => withinRange(task.completedAt, from, to));
+  const sessions = trackedSessionsForRange(from, to);
+  const completedSessions = sessions.filter((session) => focusDoneStatuses.has(session.status));
+  const comments = state.tasks.flatMap((task) => task.comments || []).filter((comment) => withinRange(comment.createdAt, from, to));
+  return {
+    completedFocus: completedSessions.length,
+    interruptedFocus: sessions.filter((session) => session.status === "interrupted").length,
+    focusMinutes: sessions.reduce((sum, session) => sum + focusSessionMinutes(session), 0),
+    completedTasks: tasks.length,
+    urgentDone: tasks.filter((task) => task.priority === "important-urgent").length,
+    commentCount: comments.length,
+    tasksWithComments: tasks.filter((task) => task.comments && task.comments.length > 0).length,
+    completedInserted: tasks.filter(isInsertedTask).length,
+  };
+}
+
+function syncAchievementUnlocks(weekId, stats) {
+  const unlocked = state.achievements.filter((item) => item.weekId === weekId);
+  let changed = false;
+  achievementDefinitions.forEach((definition) => {
+    if (!definition.isUnlocked(stats)) return;
+    if (unlocked.some((item) => item.id === definition.id)) return;
+    const record = { id: definition.id, weekId, unlockedAt: new Date().toISOString() };
+    state.achievements.push(record);
+    unlocked.push(record);
+    changed = true;
+  });
+  if (changed) saveAchievements();
+  return unlocked;
+}
+
+function isInsertedTask(task) {
+  return task.tag === "插入事项" || task.note.includes("番茄钟中断时自动生成");
 }
 
 function renderTags() {
@@ -822,8 +962,17 @@ function renderReport() {
   const completedCount = sessions.filter((session) => focusDoneStatuses.has(session.status)).length;
   const interruptedCount = sessions.filter((session) => session.status === "interrupted").length;
   const minutes = sessions.reduce((sum, session) => sum + focusSessionMinutes(session), 0);
+  const unlockedAchievements = achievementsForRange(el.reportFrom.value, el.reportTo.value);
   const lines = [`# 周报素材（${el.reportFrom.value || "开始"} 到 ${el.reportTo.value || "今天"}）`, ""];
   lines.push(`本期完成 ${tasks.length} 项任务，完整番茄 ${completedCount} 个，中断 ${interruptedCount} 次，累计约 ${formatHours(minutes)} 小时专注。`, "");
+  if (unlockedAchievements.length) {
+    lines.push("## 本期成就");
+    unlockedAchievements.forEach((record) => {
+      const definition = achievementDefinitionById(record.id);
+      if (definition) lines.push(`- ${definition.title}：${definition.report}`);
+    });
+    lines.push("");
+  }
   if (!tasks.length) {
     lines.push("本期还没有已完成事项。");
   } else {
@@ -840,6 +989,16 @@ function renderReport() {
     });
   }
   el.reportOutput.value = lines.join("\n").trim();
+}
+
+function achievementsForRange(from, to) {
+  return state.achievements
+    .filter((record) => withinRange(record.unlockedAt, from, to))
+    .sort((a, b) => new Date(a.unlockedAt) - new Date(b.unlockedAt));
+}
+
+function achievementDefinitionById(id) {
+  return achievementDefinitions.find((definition) => definition.id === id) || null;
 }
 
 async function copyReport() {
@@ -1027,6 +1186,15 @@ function normalizeFocusSession(session) {
   };
 }
 
+function normalizeAchievement(achievement) {
+  if (!achievement || !achievement.id || !achievement.weekId) return null;
+  return {
+    id: String(achievement.id),
+    weekId: String(achievement.weekId),
+    unlockedAt: achievement.unlockedAt || new Date().toISOString(),
+  };
+}
+
 function setDefaultReportRange() {
   const now = new Date();
   const start = new Date(now);
@@ -1044,6 +1212,14 @@ function weekKey(date) {
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   return { id: toDateInputValue(start), label: `${toDateInputValue(start)} 到 ${toDateInputValue(end)}` };
+}
+
+function weekRange(date) {
+  const key = weekKey(date);
+  const start = key.id;
+  const endDate = new Date(`${start}T00:00:00`);
+  endDate.setDate(endDate.getDate() + 6);
+  return { id: key.id, label: key.label, start, end: toDateInputValue(endDate) };
 }
 
 function monthKey(date) {

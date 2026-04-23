@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dahe Todo</title>
+    <title>Dahe Todo | Local-first Windows todo app</title>
     <meta
       name="description"
-      content="A local-first Windows todo app for quick capture, completion comments, priority quadrants, history review, and weekly-report material collection."
+      content="A local-first Windows todo app with quick capture, Pomodoro focus, weekly achievements, completion comments, priority quadrants, and report material export."
     />
     <link rel="alternate" hreflang="zh-CN" href="https://hyv5478.github.io/dahe-todo/" />
     <link rel="alternate" hreflang="en" href="https://hyv5478.github.io/dahe-todo/en.html" />
@@ -23,87 +23,127 @@
             <strong>English</strong>
           </div>
           <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#desktop">Desktop</a>
-            <a href="#privacy">Local Data</a>
-            <a href="#start">Get Started</a>
+            <a href="#highlights">Highlights</a>
+            <a href="#matrix">Matrix</a>
+            <a href="#privacy">Privacy</a>
+            <a href="#release">Download</a>
+            <a href="#develop">Develop</a>
           </div>
         </div>
       </nav>
 
       <div class="hero-grid">
         <section class="hero-copy">
-          <p class="eyebrow">Local Windows todo · Desktop app · Weekly reports</p>
-          <h1>Catch every sudden task before it disappears.</h1>
+          <div class="badge-row" aria-label="Project status">
+            <span>Windows</span>
+            <span>v0.5.0</span>
+            <span>Local First</span>
+            <span>MIT</span>
+          </div>
+          <p class="eyebrow">Local first · Quick capture · Pomodoro · Weekly achievements</p>
+          <h1>Catch interrupted work before it disappears.</h1>
           <p class="lead">
-            A lightweight local-first todo app for quick capture, completion notes, priority review, and turning finished work into weekly-report material.
+            Dahe Todo is a Windows desktop todo app for busy office work: capture sudden tasks, run task-bound focus sessions, add completion notes, review by week, and turn the trail into weekly-report material.
           </p>
           <div class="hero-actions">
-            <a class="primary-link" href="#start">Download Desktop App</a>
+            <a class="primary-link" href="#release">Download v0.5.0</a>
             <a class="secondary-link" href="https://github.com/hyv5478/dahe-todo" target="_blank" rel="noreferrer">View GitHub</a>
           </div>
         </section>
 
         <figure class="preview-frame">
-          <img src="assets/desktop-preview-en.svg" alt="Dahe Todo desktop app preview" />
+          <img src="assets/desktop-preview-en.svg" alt="Dahe Todo v0.5.0 desktop preview" />
         </figure>
       </div>
     </header>
 
     <main>
-      <section id="features" class="section">
+      <section id="highlights" class="section">
         <div class="section-head">
-          <p class="eyebrow">Features</p>
-          <h2>Designed for small tasks, interruptions, and imperfect memory.</h2>
+          <p class="eyebrow">v0.5.0 Highlights</p>
+          <h2>From task capture to visible weekly momentum.</h2>
         </div>
-        <div class="feature-grid">
+        <div class="feature-grid three">
           <article>
-            <h3>Quick Capture</h3>
-            <p>Write things down first without forcing yourself to organize every detail immediately.</p>
+            <span class="card-kicker">Focus</span>
+            <h3>Task-bound Pomodoro</h3>
+            <p>Start focus on the selected task and track completed sessions, interruptions, total minutes, and today's effort.</p>
           </article>
           <article>
-            <h3>Completion Comments</h3>
-            <p>Add multiple follow-up notes after a task is done, so results and context are not lost.</p>
+            <span class="card-kicker">Achievement</span>
+            <h3>Weekly achievements</h3>
+            <p>Unlock weekly badges such as First Step, Steady Rhythm, Closed Loop, and Report Ready.</p>
           </article>
           <article>
-            <h3>Priority Quadrants</h3>
-            <p>Use important urgent, important not urgent, not important urgent, and not important not urgent filters.</p>
-          </article>
-          <article>
-            <h3>History and Reports</h3>
-            <p>Keep creation time, completion time, and comments for weekly or monthly review.</p>
+            <span class="card-kicker">Report</span>
+            <h3>Better report material</h3>
+            <p>Generate weekly material with completed tasks, comments, focus time, interruption count, and unlocked achievements.</p>
           </article>
         </div>
       </section>
 
-      <section id="desktop" class="section split">
-        <div>
-          <p class="eyebrow">Desktop</p>
-          <h2>Open it like a regular Windows app, no browser needed.</h2>
+      <section id="matrix" class="section matrix-section">
+        <div class="section-head">
+          <p class="eyebrow">Capability Matrix</p>
+          <h2>Focused on people who are interrupted often and forget small things easily.</h2>
         </div>
-        <p>
-          The desktop app is built with Electron and supports Windows 10. The app name and local data directory are configurable, so the project can be reused by other people after open sourcing.
-        </p>
+        <div class="matrix-grid">
+          <article>
+            <h3>Capture</h3>
+            <p>Quickly enter task title, note, group, and priority before the thought disappears.</p>
+          </article>
+          <article>
+            <h3>Execute</h3>
+            <p>Use priority quadrants and focus sessions; urgent inserted work can be converted into a todo.</p>
+          </article>
+          <article>
+            <h3>Record</h3>
+            <p>Keep creation time, completion time, comments, focus history, and interruption history.</p>
+          </article>
+          <article>
+            <h3>Review</h3>
+            <p>Browse history by week/month, copy report material, and see weekly achievements.</p>
+          </article>
+        </div>
       </section>
 
       <section id="privacy" class="section split">
         <div>
-          <p class="eyebrow">Local First</p>
-          <h2>Your task data stays on your computer by default.</h2>
+          <p class="eyebrow">Data and Privacy</p>
+          <h2>No account, no upload, no default network dependency.</h2>
         </div>
-        <p>
-          Task data is stored at <code>Documents/DaheTodo/tasks.json</code> by default, and the directory can be changed in settings. The repository includes privacy checks to avoid committing local task data, installers, caches, and tool directories.
-        </p>
+        <div class="copy-stack">
+          <p>
+            The desktop app stores data under <code>%USERPROFILE%\Documents\DaheTodo</code> by default. Tasks, focus sessions, and achievements live in separate JSON files.
+          </p>
+          <p>
+            The repository includes privacy checks and a pre-push hook to prevent local task data, installers, caches, and tool folders from being committed.
+          </p>
+        </div>
       </section>
 
-      <section id="start" class="section start-card">
-        <p class="eyebrow">Get Started</p>
-        <h2>Download, install, and start capturing tasks.</h2>
-        <ol>
-          <li>Download the Windows installer from GitHub Releases.</li>
-          <li>Open the desktop app and confirm the data storage location in settings.</li>
-          <li>Add tasks, append comments after completion, and collect report material from the report page.</li>
-        </ol>
+      <section id="release" class="section release-card">
+        <div>
+          <p class="eyebrow">Release</p>
+          <h2>Windows installer</h2>
+          <p>Current version: <strong>v0.5.0-achievements</strong></p>
+        </div>
+        <div class="release-actions">
+          <a class="primary-link" href="https://github.com/hyv5478/dahe-todo/releases/latest" target="_blank" rel="noreferrer">Open Releases</a>
+          <a class="secondary-link" href="https://github.com/hyv5478/dahe-todo" target="_blank" rel="noreferrer">View Source</a>
+        </div>
+      </section>
+
+      <section id="develop" class="section split">
+        <div>
+          <p class="eyebrow">Developers</p>
+          <h2>Electron desktop app, local JSON storage.</h2>
+        </div>
+        <div class="code-panel">
+          <code>cd desktop</code>
+          <code>npm.cmd run check</code>
+          <code>npm.cmd run dist</code>
+        </div>
       </section>
     </main>
   </body>

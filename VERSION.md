@@ -68,3 +68,14 @@ Focus timer completion fix.
 - Completing a task during an active Pomodoro no longer blocks the user
 - Active focus sessions are automatically settled as `task-completed`
 - The completed Pomodoro remains counted in today and report statistics
+
+## v0.5.0-achievements
+
+Weekly achievement system and release polish.
+
+- Added a weekly achievements panel for Pomodoro and task-completion progress
+- Added independent `achievements.json` local storage
+- Export/import now carries tasks, focus sessions, and achievements
+- Weekly report output includes unlocked achievements
+- Added privacy checks for focus session and achievement files
+- Updated website, README files, and desktop preview for the v0.5.0 release

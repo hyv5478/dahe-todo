@@ -2,63 +2,42 @@
 
 [简体中文](README.md) · **English**
 
-A local-first Windows todo app for interruption-heavy work: quick capture, completion comments, priority quadrants, history review, and weekly-report material collection.
+A local-first Windows todo app for quick capture, inserted tasks, Pomodoro focus, completion comments, weekly achievements, and report material collection.
+
+[Website](https://hyv5478.github.io/dahe-todo/) · [GitHub Releases](https://github.com/hyv5478/dahe-todo/releases/latest)
 
 ![Desktop preview](docs/assets/desktop-preview-en.svg)
 
-Website: [https://hyv5478.github.io/dahe-todo/](https://hyv5478.github.io/dahe-todo/)
-
-## Features
-
-- Capture sudden tasks quickly without breaking your current workflow.
-- Add multiple comments after completion to record results, causes, impact, and follow-up notes.
-- Start a Pomodoro focus timer for the current task and track daily or weekly focus effort.
-- Use four priority quadrants: important urgent, important not urgent, not important urgent, not important not urgent.
-- Filter active tasks by priority and review completed work by time range.
-- Collect completed tasks and comments for weekly reports.
-- Store data locally as JSON by default.
-- Configure the desktop app name and local data directory.
-
 ## Current Version
 
-- Desktop version: `v0.4.1-focus-completion`
-- Windows installer is available from GitHub Releases.
+- Desktop version: `v0.5.0-achievements`
+- Windows installer: `大何的待办事项 Setup 0.5.0.exe`
+- Storage model: local JSON files by default
 
-## Desktop Development
+## Capability Areas
 
-Install dependencies:
+### Capture
 
-```powershell
-cd desktop
-npm.cmd install --cache .npm-cache
-```
+- Quickly capture sudden tasks before they disappear.
+- Store title, note, group, and priority.
+- Use four priority quadrants: important urgent, important not urgent, not important urgent, and not important not urgent.
 
-Start the desktop app:
+### Execute
 
-```powershell
-cd desktop
-npm.cmd start
-```
+- Filter active todos by priority.
+- Start a task-bound Pomodoro and track completed sessions, interruptions, and focus minutes.
+- Convert certain interruptions into a new important urgent todo.
 
-Run checks:
+### Record
 
-```powershell
-cd desktop
-npm.cmd run check
-```
+- Add multiple completion comments after a task is done.
+- Keep creation time, completion time, group, priority, focus history, and interruption history.
 
-Build the Windows installer:
+### Review
 
-```powershell
-cd desktop
-npm.cmd run dist
-```
-
-Installer output:
-
-```text
-desktop/release/大何的待办事项 Setup 0.4.1.exe
-```
+- Review history by week or month.
+- Generate report material with completed tasks, comments, focus time, interruption count, and achievements.
+- v0.5.0 adds weekly achievements to make progress visible.
 
 ## Local Data
 
@@ -68,41 +47,46 @@ Default desktop data directory:
 %USERPROFILE%\Documents\DaheTodo
 ```
 
-`tasks.json` stores tasks, and `focus-sessions.json` stores Pomodoro focus history. The data directory can be changed inside the app. This repository includes a privacy check and pre-push hook to prevent local task data, installers, dependency caches, and tool directories from being committed.
+Core data files:
 
-## Web Version
-
-The legacy local browser version is still available:
-
-```powershell
-start-todo.bat
+```text
+tasks.json
+focus-sessions.json
+achievements.json
 ```
 
-Its data is stored at `data/tasks.json`, which is ignored by Git.
+The repository includes privacy checks and a pre-push hook to prevent local task data, focus sessions, achievements, installers, caches, and tool folders from being committed.
+
+## Desktop Development
+
+```powershell
+cd desktop
+npm.cmd install --cache .npm-cache
+npm.cmd run check
+npm.cmd run dist
+```
+
+Installer output:
+
+```text
+desktop/release/大何的待办事项 Setup 0.5.0.exe
+```
 
 ## Website
 
-GitHub Pages is served from:
+GitHub Pages uses:
 
 ```text
 docs/
 ```
 
-Chinese page:
+Chinese page: `docs/index.html`
 
-```text
-docs/index.html
-```
-
-English page:
-
-```text
-docs/en.html
-```
+English page: `docs/en.html`
 
 ## Privacy
 
-Dahe Todo does not require an account, does not connect to a knowledge base, and does not upload todo content by default. See [PRIVACY.md](PRIVACY.md).
+The project does not require an account, connect to a knowledge base, or upload todo content by default. See [PRIVACY.md](PRIVACY.md).
 
 ## License
 
