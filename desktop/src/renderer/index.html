@@ -12,6 +12,7 @@
         <div>
           <div class="eyebrow" id="versionLabel">桌面端</div>
           <h1 id="appNameTitle">大何的待办事项</h1>
+          <p id="dataPath" class="visually-hidden" aria-hidden="true">正在读取数据文件...</p>
         </div>
         <div class="header-actions">
           <button id="openSettings" class="quiet-button" type="button">设置</button>
@@ -32,60 +33,23 @@
         </div>
       </section>
 
-      <section class="capture-strip" aria-labelledby="capture-title">
-        <div class="capture-title">
-          <h2 id="capture-title">快速收集</h2>
-          <p id="dataPath">正在读取数据文件...</p>
-        </div>
-        <section class="achievement-panel" aria-labelledby="achievementTitle">
-          <div class="achievement-head">
-            <div>
-              <span>0.5 本周成就</span>
-              <h2 id="achievementTitle">本周成就</h2>
-            </div>
-            <strong id="achievementScore">0/0</strong>
-          </div>
-          <div class="achievement-metrics">
-            <div><strong id="weekFocusCount">0</strong><span>番茄</span></div>
-            <div><strong id="weekFocusHours">0</strong><span>小时</span></div>
-            <div><strong id="weekTaskCount">0</strong><span>完成</span></div>
-          </div>
-          <div id="achievementList" class="achievement-list"></div>
-        </section>
-        <form id="taskForm" class="capture-form">
-          <label>
-            <span>事情</span>
-            <input id="taskTitle" type="text" autocomplete="off" placeholder="马上记下来" required />
-          </label>
-          <label>
-            <span>补充</span>
-            <input id="taskNote" type="text" autocomplete="off" placeholder="地点、对象、下一步" />
-          </label>
-          <label>
-            <span>分组</span>
-            <input id="taskTag" type="text" list="tagOptions" placeholder="工作 / 生活" />
-          </label>
-          <label>
-            <span>优先级</span>
-            <select id="taskPriority">
-              <option value="important-urgent">重要紧急</option>
-              <option value="important-not-urgent">重要不紧急</option>
-              <option value="not-important-urgent">不重要紧急</option>
-              <option value="not-important-not-urgent">不重要不紧急</option>
-            </select>
-          </label>
-          <button class="primary-button" type="submit">添加</button>
-          <datalist id="tagOptions"></datalist>
-        </form>
-      </section>
-
-      <section class="desk-grid">
+      <section class="workspace-shell">
         <aside class="side-panel" aria-label="导航和筛选">
           <div class="stat-grid">
             <div><strong id="activeCount">0</strong><span>待办</span></div>
             <div><strong id="doneCount">0</strong><span>完成</span></div>
             <div class="today-focus"><strong id="todayFocusCount">0</strong><span>今日番茄</span></div>
           </div>
+
+          <section class="follow-up-overview" aria-labelledby="followUpOverviewTitle">
+            <div class="section-kicker">跟进提醒</div>
+            <h3 id="followUpOverviewTitle">别让下周的事掉到历史里</h3>
+            <div class="follow-up-metrics">
+              <div><strong id="followUpTodayCount">0</strong><span>今日待跟进</span></div>
+              <div><strong id="followUpWeekCount">0</strong><span>本周待跟进</span></div>
+              <div><strong id="followUpOverdueCount">0</strong><span>已逾期</span></div>
+            </div>
+          </section>
 
           <nav class="view-tabs" aria-label="视图">
             <button class="view-tab active" type="button" data-view="active">待办</button>
@@ -128,80 +92,177 @@
           </div>
         </aside>
 
-        <section class="list-panel" aria-label="事项列表">
-          <div class="panel-head">
-            <div>
-              <h2 id="listTitle">待办</h2>
-              <p id="listSummary">0 条</p>
-            </div>
-          </div>
-          <div id="taskList" class="task-list"></div>
-          <p id="emptyList" class="empty">暂无事项。</p>
-        </section>
-
-        <section class="detail-panel" aria-label="详情">
-          <div id="detailEmpty" class="detail-empty">
-            <h2>选择一个事项</h2>
-            <p>右侧会显示详情、专注番茄、时间、分组和评论。</p>
-          </div>
-
-          <article id="taskDetail" class="task-detail hidden">
-            <div class="detail-top">
-              <div>
-                <span id="detailStatus" class="status-pill">待办中</span>
-                <h2 id="detailTitle"></h2>
-                <p id="detailNote"></p>
-              </div>
-              <div class="detail-actions">
-                <button id="toggleDone" class="primary-button" type="button">完成</button>
-                <button id="deleteTask" class="danger-button" type="button">删除</button>
-              </div>
-            </div>
-
-            <section id="focusPanel" class="focus-panel">
-              <div class="focus-head">
+        <div class="workspace-main">
+          <section class="capture-strip" aria-labelledby="achievementTitle">
+            <section class="achievement-panel" aria-labelledby="achievementTitle">
+              <div class="achievement-head">
                 <div>
-                  <h3>专注番茄</h3>
-                  <p id="focusPanelSummary">开始一轮专注，把当前任务守住。</p>
+                  <span>本周回看</span>
+                  <h2 id="achievementTitle">本周成就</h2>
                 </div>
-                <div id="focusRing" class="focus-ring" style="--progress: 0deg">
-                  <span id="focusTime">25:00</span>
-                </div>
+                <strong id="achievementScore">0/0</strong>
               </div>
-              <div class="focus-actions">
-                <button id="startFocus" class="tomato-button" type="button">开始专注</button>
-                <button id="startBreak" class="quiet-button hidden" type="button">开始休息</button>
-                <button id="skipBreak" class="quiet-button hidden" type="button">跳过休息</button>
-                <button id="abortFocus" class="danger-button hidden" type="button">放弃本轮</button>
+              <div class="achievement-metrics">
+                <div><strong id="weekFocusCount">0</strong><span>番茄</span></div>
+                <div><strong id="weekFocusHours">0</strong><span>小时</span></div>
+                <div><strong id="weekTaskCount">0</strong><span>完成</span></div>
               </div>
-              <p id="focusStats" class="focus-stats">本任务 0 个番茄 · 今日 0 个番茄</p>
-              <div id="focusHistory" class="focus-history"></div>
+              <div id="achievementList" class="achievement-list"></div>
             </section>
 
-            <dl id="detailMeta" class="detail-meta"></dl>
-            <section id="commentSection" class="comments-block">
-              <h3>完成备注</h3>
-              <textarea id="newComment" rows="4" placeholder="这次完成一条：结果、原因、后续影响"></textarea>
-              <button id="addComment" class="primary-button" type="button">追加评论</button>
-              <div id="commentList" class="comment-list"></div>
-            </section>
-          </article>
+            <form id="taskForm" class="capture-form">
+              <label>
+                <span>事情</span>
+                <input id="taskTitle" type="text" autocomplete="off" placeholder="马上记下来" required />
+              </label>
+              <label>
+                <span>补充</span>
+                <input id="taskNote" type="text" autocomplete="off" placeholder="地点、对象、下一步" />
+              </label>
+              <label>
+                <span>分组</span>
+                <input id="taskTag" type="text" list="tagOptions" placeholder="工作 / 生活" />
+              </label>
+              <label>
+                <span>优先级</span>
+                <select id="taskPriority">
+                  <option value="important-urgent">重要紧急</option>
+                  <option value="important-not-urgent">重要不紧急</option>
+                  <option value="not-important-urgent">不重要紧急</option>
+                  <option value="not-important-not-urgent">不重要不紧急</option>
+                </select>
+              </label>
+              <button class="primary-button" type="submit">添加</button>
+              <datalist id="tagOptions"></datalist>
+            </form>
+          </section>
 
-          <article id="reportDetail" class="report-detail hidden">
-            <div class="report-tools">
-              <label>
-                <span>从</span>
-                <input id="reportFrom" type="date" />
-              </label>
-              <label>
-                <span>到</span>
-                <input id="reportTo" type="date" />
-              </label>
-              <button id="copyReport" class="quiet-button" type="button">复制</button>
-            </div>
-            <textarea id="reportOutput" spellcheck="false"></textarea>
-          </article>
-        </section>
+          <section class="desk-grid">
+            <section class="list-panel" aria-label="事项列表">
+              <div class="panel-head">
+                <div>
+                  <h2 id="listTitle">待办</h2>
+                  <p id="listSummary">0 条</p>
+                </div>
+              </div>
+              <div id="taskList" class="task-list"></div>
+              <p id="emptyList" class="empty">暂无事项。</p>
+            </section>
+
+            <section class="detail-panel" aria-label="详情">
+              <div id="detailEmpty" class="detail-empty">
+                <h2>选择一个事项</h2>
+                <p>右侧会显示详情、专注番茄、时间、分组和评论。</p>
+              </div>
+
+              <article id="taskDetail" class="task-detail hidden">
+                <div class="detail-top">
+                  <div>
+                    <span id="detailStatus" class="status-pill">待办中</span>
+                    <h2 id="detailTitle"></h2>
+                    <p id="detailNote"></p>
+                  </div>
+                  <div class="detail-actions">
+                    <div class="detail-primary-actions">
+                      <button id="toggleDone" class="primary-button" type="button">完成</button>
+                      <button id="deleteTask" class="danger-button" type="button">删除</button>
+                    </div>
+                    <button id="openFocusPanel" class="focus-toggle-button" type="button">番茄钟</button>
+                  </div>
+                </div>
+
+                <section id="focusPanel" class="focus-panel hidden">
+                  <div class="focus-head">
+                    <div>
+                      <h3>专注番茄</h3>
+                      <p id="focusPanelSummary">开始一轮专注，把当前任务守住。</p>
+                    </div>
+                    <div id="focusRing" class="focus-ring" style="--progress: 0deg">
+                      <span id="focusTime">25:00</span>
+                    </div>
+                  </div>
+                  <div class="focus-actions">
+                    <button id="startFocus" class="tomato-button" type="button">开始专注</button>
+                    <button id="startBreak" class="quiet-button hidden" type="button">开始休息</button>
+                    <button id="skipBreak" class="quiet-button hidden" type="button">跳过休息</button>
+                    <button id="abortFocus" class="danger-button hidden" type="button">放弃本轮</button>
+                  </div>
+                  <p id="focusStats" class="focus-stats">本任务 0 个番茄 · 今日 0 个番茄</p>
+                  <div id="focusHistory" class="focus-history"></div>
+                </section>
+
+                <dl id="detailMeta" class="detail-meta"></dl>
+
+                <section id="followUpSection" class="follow-up-block">
+                  <div class="follow-up-block-head">
+                    <div>
+                      <div class="section-kicker">推进链路</div>
+                      <h3 id="followUpSectionTitle">完成并跟进</h3>
+                      <p id="followUpSectionHint">适合这轮已经做完、后面还要继续盯的事项。</p>
+                    </div>
+                    <span id="followUpThreadBadge" class="summary-pill hidden"></span>
+                  </div>
+
+                  <div id="followUpSummary" class="follow-up-summary hidden"></div>
+                  <div class="follow-up-inline-actions">
+                    <button id="backfillFollowUp" class="quiet-button hidden" type="button">补建跟进</button>
+                    <button id="cancelBackfillFollowUp" class="quiet-button hidden" type="button">取消</button>
+                  </div>
+
+                  <div id="followUpComposer" class="follow-up-composer hidden">
+                    <label id="followUpNoteLabel" class="follow-up-note">
+                      <span id="followUpNoteText">本次完成情况</span>
+                      <textarea id="newComment" rows="4" placeholder="这次做到哪一步？结果、原因、后续影响"></textarea>
+                    </label>
+                    <div id="followUpGrid" class="follow-up-grid">
+                      <label>
+                        <span>下次动作</span>
+                        <input id="followUpTitle" type="text" autocomplete="off" placeholder="下周继续做什么" />
+                      </label>
+                      <label>
+                        <span>跟进日期</span>
+                        <input id="followUpDate" type="date" />
+                      </label>
+                      <label>
+                        <span>跟进方式</span>
+                        <select id="followUpMode">
+                          <option value="self">我来跟进</option>
+                          <option value="waiting">等待对方</option>
+                          <option value="review">定期回看</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="follow-up-submit-row">
+                      <button id="completeWithFollowUp" class="primary-button" type="button">保存完成情况并创建下次跟进</button>
+                    </div>
+                  </div>
+                </section>
+
+                <section id="commentSection" class="comments-block">
+                  <h3 id="commentSectionTitle">完成备注</h3>
+                  <textarea id="commentInput" rows="4" placeholder="继续补充新的进展、结果、后续影响"></textarea>
+                  <button id="addComment" class="primary-button" type="button">追加评论</button>
+                  <div id="commentList" class="comment-list"></div>
+                </section>
+              </article>
+
+              <article id="reportDetail" class="report-detail hidden">
+                <div class="report-tools">
+                  <label>
+                    <span>从</span>
+                    <input id="reportFrom" type="date" />
+                  </label>
+                  <label>
+                    <span>到</span>
+                    <input id="reportTo" type="date" />
+                  </label>
+                  <button id="copyReport" class="quiet-button" type="button">复制</button>
+                </div>
+                <textarea id="reportOutput" spellcheck="false"></textarea>
+              </article>
+            </section>
+          </section>
+        </div>
       </section>
     </main>
 
@@ -278,3 +339,4 @@
     <script src="app.js"></script>
   </body>
 </html>
+

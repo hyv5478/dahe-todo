@@ -8,7 +8,7 @@ const preloadJs = fs.readFileSync(path.join(__dirname, "..", "src", "preload.js"
 const mainJs = fs.readFileSync(path.join(__dirname, "..", "src", "main.js"), "utf8");
 const stylesCss = fs.readFileSync(path.join(__dirname, "..", "src", "renderer", "styles.css"), "utf8");
 
-assert.ok(mainJs.includes("v0.5.0-achievements"));
+assert.ok(mainJs.includes("v0.6.1-focus-toggle"));
 assert.ok(mainJs.includes("achievements:load"));
 assert.ok(mainJs.includes("achievements:save"));
 assert.ok(preloadJs.includes("loadAchievements"));
@@ -24,7 +24,7 @@ assert.ok(indexHtml.includes("achievementPanel") || indexHtml.includes("achievem
 assert.ok(indexHtml.includes("achievementList"));
 assert.ok(indexHtml.includes("weekFocusCount"));
 assert.ok(stylesCss.includes("overflow-x: auto"));
-assert.ok(stylesCss.includes("flex: 0 0 178px"));
+assert.ok(stylesCss.includes("flex: 0 0 154px"));
 assert.ok(stylesCss.includes("scrollbar-width: thin"));
 
 console.log("OK: weekly achievements are wired through storage, UI, and report output.");

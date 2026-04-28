@@ -4,6 +4,8 @@ const state = {
   achievements: [],
   view: "active",
   selectedId: null,
+  backfillFollowUpId: null,
+  focusPanelOpenId: null,
   search: "",
   priorityFilter: "all",
   info: null,
@@ -24,6 +26,9 @@ const el = {
   activeCount: document.querySelector("#activeCount"),
   doneCount: document.querySelector("#doneCount"),
   todayFocusCount: document.querySelector("#todayFocusCount"),
+  followUpTodayCount: document.querySelector("#followUpTodayCount"),
+  followUpWeekCount: document.querySelector("#followUpWeekCount"),
+  followUpOverdueCount: document.querySelector("#followUpOverdueCount"),
   achievementScore: document.querySelector("#achievementScore"),
   weekFocusCount: document.querySelector("#weekFocusCount"),
   weekFocusHours: document.querySelector("#weekFocusHours"),
@@ -51,11 +56,13 @@ const el = {
   detailMeta: document.querySelector("#detailMeta"),
   toggleDone: document.querySelector("#toggleDone"),
   deleteTask: document.querySelector("#deleteTask"),
+  openFocusPanel: document.querySelector("#openFocusPanel"),
   focusBar: document.querySelector("#focusBar"),
   focusBarMode: document.querySelector("#focusBarMode"),
   focusBarTask: document.querySelector("#focusBarTask"),
   focusBarTime: document.querySelector("#focusBarTime"),
   focusBarAbort: document.querySelector("#focusBarAbort"),
+  focusPanel: document.querySelector("#focusPanel"),
   focusPanelSummary: document.querySelector("#focusPanelSummary"),
   focusRing: document.querySelector("#focusRing"),
   focusTime: document.querySelector("#focusTime"),
@@ -65,8 +72,25 @@ const el = {
   abortFocus: document.querySelector("#abortFocus"),
   focusStats: document.querySelector("#focusStats"),
   focusHistory: document.querySelector("#focusHistory"),
+  followUpSection: document.querySelector("#followUpSection"),
+  followUpSectionTitle: document.querySelector("#followUpSectionTitle"),
+  followUpSectionHint: document.querySelector("#followUpSectionHint"),
+  followUpThreadBadge: document.querySelector("#followUpThreadBadge"),
+  followUpSummary: document.querySelector("#followUpSummary"),
+  backfillFollowUp: document.querySelector("#backfillFollowUp"),
+  cancelBackfillFollowUp: document.querySelector("#cancelBackfillFollowUp"),
+  followUpComposer: document.querySelector("#followUpComposer"),
+  followUpNoteLabel: document.querySelector("#followUpNoteLabel"),
+  followUpNoteText: document.querySelector("#followUpNoteText"),
+  followUpGrid: document.querySelector("#followUpGrid"),
   commentSection: document.querySelector("#commentSection"),
+  commentSectionTitle: document.querySelector("#commentSectionTitle"),
+  commentInput: document.querySelector("#commentInput"),
   newComment: document.querySelector("#newComment"),
+  followUpTitle: document.querySelector("#followUpTitle"),
+  followUpDate: document.querySelector("#followUpDate"),
+  followUpMode: document.querySelector("#followUpMode"),
+  completeWithFollowUp: document.querySelector("#completeWithFollowUp"),
   addComment: document.querySelector("#addComment"),
   commentList: document.querySelector("#commentList"),
   reportFrom: document.querySelector("#reportFrom"),
@@ -114,6 +138,12 @@ const legacyPriorityMap = {
   high: "important-urgent",
   normal: "important-not-urgent",
   low: "not-important-not-urgent",
+};
+
+const followUpModeText = {
+  self: "我来跟进",
+  waiting: "等待对方",
+  review: "定期回看",
 };
 
 const focusDoneStatuses = new Set(["break-ready", "completed", "break-skipped", "task-completed"]);
@@ -234,6 +264,7 @@ function bindEvents() {
 
   el.toggleDone.addEventListener("click", toggleSelectedDone);
   el.deleteTask.addEventListener("click", deleteSelectedTask);
+  el.openFocusPanel.addEventListener("click", toggleFocusPanel);
   el.startFocus.addEventListener("click", startFocusForSelectedTask);
   el.startBreak.addEventListener("click", startBreak);
   el.skipBreak.addEventListener("click", skipBreak);
@@ -246,6 +277,9 @@ function bindEvents() {
   el.confirmOtherInterrupt.addEventListener("click", confirmOtherInterrupt);
   el.cancelOtherInterrupt.addEventListener("click", hideOtherInterruptBox);
   el.addComment.addEventListener("click", addSelectedComment);
+  el.completeWithFollowUp.addEventListener("click", completeSelectedWithFollowUp);
+  el.backfillFollowUp.addEventListener("click", openBackfillFollowUp);
+  el.cancelBackfillFollowUp.addEventListener("click", cancelBackfillFollowUp);
   el.copyReport.addEventListener("click", copyReport);
   el.openDataFolder.addEventListener("click", () => window.daheTodo.openDataFolder());
   el.exportData.addEventListener("click", () => window.daheTodo.exportData());
@@ -286,7 +320,16 @@ function addTask() {
   render();
 }
 
-function createTask({ title, note = "", tag = "", priority = "important-urgent" }) {
+function createTask({
+  title,
+  note = "",
+  tag = "",
+  priority = "important-urgent",
+  threadId = makeId("thread"),
+  sourceTaskId = null,
+  visibleFrom = "",
+  followUpMode = "",
+}) {
   return {
     id: makeId("task"),
     title: String(title).trim(),
@@ -296,6 +339,10 @@ function createTask({ title, note = "", tag = "", priority = "important-urgent" 
     createdAt: new Date().toISOString(),
     completedAt: null,
     comments: [],
+    threadId: String(threadId || makeId("thread")),
+    sourceTaskId: sourceTaskId ? String(sourceTaskId) : null,
+    visibleFrom: normalizeDateValue(visibleFrom),
+    followUpMode: followUpMode && followUpModeText[followUpMode] ? followUpMode : "",
   };
 }
 
@@ -313,6 +360,68 @@ function toggleSelectedDone() {
   }
   task.completedAt = task.completedAt ? null : new Date().toISOString();
   if (task.completedAt) state.view = "history";
+  saveTasks();
+  render();
+}
+
+function toggleFocusPanel() {
+  const task = selectedTask();
+  if (!task) return;
+  state.focusPanelOpenId = state.focusPanelOpenId === task.id ? null : task.id;
+  renderFocus();
+}
+
+function completeSelectedWithFollowUp() {
+  const task = selectedTask();
+  if (!task) return;
+  const isBackfill = Boolean(task.completedAt && state.backfillFollowUpId === task.id);
+  if (!isBackfill && task.completedAt) return;
+
+  const existingFollowUp = directFollowUpTask(task.id);
+  if (existingFollowUp) {
+    alert("这条事项已经创建过接续跟进了，直接去改那条跟进事项就行。");
+    state.selectedId = isTaskVisibleNow(existingFollowUp) ? existingFollowUp.id : task.id;
+    state.view = isTaskVisibleNow(existingFollowUp) ? "active" : "history";
+    render();
+    return;
+  }
+
+  const nextTitle = el.followUpTitle.value.trim();
+  const followUpDate = normalizeDateValue(el.followUpDate.value);
+  const followUpMode = el.followUpMode.value;
+  const note = el.newComment.value.trim();
+  if (!nextTitle) {
+    el.followUpTitle.focus();
+    return;
+  }
+  if (!followUpDate) {
+    el.followUpDate.focus();
+    return;
+  }
+
+  const completedAt = new Date().toISOString();
+  if (!isBackfill) {
+    settleFocusForCompletedTask(task);
+    if (note) pushComment(task, note, completedAt);
+    task.completedAt = completedAt;
+  }
+
+  const carryNote = buildFollowUpNote(task, note, followUpMode);
+  const nextTask = createTask({
+    title: nextTitle,
+    note: carryNote,
+    tag: task.tag,
+    priority: task.priority,
+    threadId: task.threadId || task.id,
+    sourceTaskId: task.id,
+    visibleFrom: followUpDate,
+    followUpMode,
+  });
+  state.tasks.unshift(nextTask);
+  state.selectedId = task.id;
+  state.view = "history";
+  state.backfillFollowUpId = null;
+  clearFollowUpComposer();
   saveTasks();
   render();
 }
@@ -517,15 +626,10 @@ function advanceTimerIfNeeded() {
 function addSelectedComment() {
   const task = selectedTask();
   if (!task) return;
-  const text = el.newComment.value.trim();
+  const text = el.commentInput.value.trim();
   if (!text) return;
-  task.comments.push({
-    id: makeId("comment"),
-    text,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-  });
-  el.newComment.value = "";
+  pushComment(task, text);
+  el.commentInput.value = "";
   saveTasks();
   render();
 }
@@ -548,7 +652,9 @@ function render() {
   el.versionLabel.textContent = `桌面端 · ${state.info.version}`;
   el.appNameTitle.textContent = state.info.appName;
   document.title = state.info.appName;
-  el.dataPath.textContent = `${state.info.dataFile} · 专注记录 ${state.info.focusFile} · 成就 ${state.info.achievementsFile}`;
+  if (el.dataPath) {
+    el.dataPath.textContent = `${state.info.dataFile} · 专注记录 ${state.info.focusFile} · 成就 ${state.info.achievementsFile}`;
+  }
   renderCounts();
   renderTags();
   renderTabs();
@@ -597,9 +703,13 @@ async function saveSettings() {
 }
 
 function renderCounts() {
-  el.activeCount.textContent = state.tasks.filter((task) => !task.completedAt).length;
+  const followUpStats = buildFollowUpStats();
+  el.activeCount.textContent = state.tasks.filter((task) => !task.completedAt && isTaskVisibleNow(task)).length;
   el.doneCount.textContent = state.tasks.filter((task) => task.completedAt).length;
   el.todayFocusCount.textContent = completedFocusCountForRange(todayStart(), todayEnd());
+  el.followUpTodayCount.textContent = followUpStats.today;
+  el.followUpWeekCount.textContent = followUpStats.thisWeek;
+  el.followUpOverdueCount.textContent = followUpStats.overdue;
 }
 
 function renderAchievements() {
@@ -692,12 +802,15 @@ function visibleTasks() {
   if (state.search) {
     tasks = tasks.filter(matchesSearch);
   } else if (state.view === "active") {
-    tasks = tasks.filter((task) => !task.completedAt);
+    tasks = tasks.filter((task) => !task.completedAt && isTaskVisibleNow(task));
     if (state.priorityFilter !== "all") tasks = tasks.filter((task) => task.priority === state.priorityFilter);
   } else if (state.view === "history") {
     tasks = tasks.filter((task) => task.completedAt).filter((task) => withinRange(task.completedAt, el.historyFrom.value, el.historyTo.value));
   } else if (state.view === "report") {
     tasks = state.tasks.filter((task) => task.completedAt);
+  }
+  if (!state.search && state.view === "active") {
+    return tasks.sort(compareActiveTasks);
   }
   return tasks.sort((a, b) => new Date(getSortDate(b)) - new Date(getSortDate(a)));
 }
@@ -757,13 +870,21 @@ function renderTaskRow(task) {
   meta.className = "row-meta";
   const focusCount = completedSessionsForTask(task.id).length;
   const timeText = task.completedAt ? `办理 ${formatDateTime(task.completedAt)}` : `创建 ${formatDateTime(task.createdAt)}`;
-  meta.textContent = `${timeText} · ${task.tag || "未分组"} · ${focusCount} 个番茄`;
+  meta.textContent = [timeText, task.tag || "未分组", `${focusCount} 个番茄`, followUpMetaText(task)].filter(Boolean).join(" · ");
   content.append(title, note, meta);
+
+  const badges = document.createElement("div");
+  badges.className = "row-badges";
 
   const badge = document.createElement("span");
   badge.className = `priority ${task.priority}`;
   badge.textContent = priorityText[task.priority] || "重要不紧急";
-  top.append(content, badge);
+  badges.append(badge);
+
+  const followUpBadge = renderFollowUpBadge(task);
+  if (followUpBadge) badges.append(followUpBadge);
+
+  top.append(content, badges);
   row.append(top);
   return row;
 }
@@ -775,12 +896,17 @@ function renderDetail() {
   el.taskDetail.classList.toggle("hidden", showReport || !task);
   el.detailEmpty.classList.toggle("hidden", showReport || Boolean(task));
   if (!task || showReport) return;
+  if (el.commentSection.dataset.taskId !== task.id) {
+    el.commentInput.value = "";
+    el.commentSection.dataset.taskId = task.id;
+  }
 
   el.detailStatus.textContent = task.completedAt ? "已完成" : "待办中";
   el.detailTitle.textContent = task.title;
   el.detailNote.textContent = task.note || "暂无补充。";
-  el.toggleDone.textContent = task.completedAt ? "重新打开" : "完成";
+  el.toggleDone.textContent = task.completedAt ? "重新打开" : "直接完成";
   el.commentSection.classList.toggle("hidden", !task.completedAt);
+  el.commentSectionTitle.textContent = task.completedAt ? "完成备注" : "过程备注";
 
   const items = [
     ["创建", formatDateTime(task.createdAt)],
@@ -789,6 +915,12 @@ function renderDetail() {
     ["优先级", priorityText[task.priority] || "重要不紧急"],
     ["番茄", `${completedSessionsForTask(task.id).length} 个`],
   ];
+  const sourceTask = sourceTaskFor(task);
+  const nextTask = directFollowUpTask(task.id);
+  if (task.visibleFrom) items.push(["出现", formatDate(task.visibleFrom)]);
+  if (task.followUpMode) items.push(["方式", followUpModeText[task.followUpMode] || "我来跟进"]);
+  if (sourceTask) items.push(["承接", sourceTask.title]);
+  if (nextTask) items.push(["下次跟进", `${formatDate(nextTask.visibleFrom)} · ${nextTask.title}`]);
   el.detailMeta.replaceChildren(...items.flatMap(([key, value]) => {
     const dt = document.createElement("dt");
     dt.textContent = key;
@@ -797,6 +929,7 @@ function renderDetail() {
     return [dt, dd];
   }));
 
+  renderFollowUpSection(task);
   renderComments(task);
 }
 
@@ -815,6 +948,10 @@ function renderFocus() {
   }
 
   if (!task) return;
+  const shouldShowPanel = state.focusPanelOpenId === task.id || Boolean(selectedHasActive);
+  el.focusPanel.classList.toggle("hidden", !shouldShowPanel);
+  el.openFocusPanel.classList.toggle("active", shouldShowPanel);
+  el.openFocusPanel.textContent = shouldShowPanel ? "收起番茄钟" : "番茄钟";
   const taskSessions = sessionsForTask(task.id);
   const taskCount = completedSessionsForTask(task.id).length;
   const interruptedCount = taskSessions.filter((session) => session.status === "interrupted").length;
@@ -877,6 +1014,179 @@ function renderComments(task) {
     card.append(meta, textarea, button);
     return card;
   }));
+}
+
+function renderFollowUpSection(task) {
+  const nextTask = directFollowUpTask(task.id);
+  const sourceTask = sourceTaskFor(task);
+  const threadTasks = tasksInThread(task.threadId || task.id);
+  const isBackfill = state.backfillFollowUpId === task.id;
+  if (el.followUpComposer.dataset.taskId !== task.id) {
+    clearFollowUpComposer();
+    el.followUpComposer.dataset.taskId = task.id;
+  }
+
+  el.followUpSection.classList.remove("hidden");
+  el.followUpThreadBadge.classList.toggle("hidden", threadTasks.length <= 1);
+  if (threadTasks.length > 1) {
+    el.followUpThreadBadge.textContent = `${threadTasks.length} 段推进`;
+  }
+
+  if (!task.completedAt) {
+    el.followUpSectionTitle.textContent = "完成并跟进";
+    el.followUpSectionHint.textContent = "适合这轮已经做完、后面还要继续盯的事项。";
+    el.followUpNoteText.textContent = "本次完成情况";
+    el.newComment.placeholder = "这次做到哪一步？结果、原因、后续影响";
+    el.followUpComposer.classList.remove("hidden");
+    el.followUpNoteLabel.classList.remove("hidden");
+    el.followUpGrid.classList.remove("hidden");
+    el.completeWithFollowUp.classList.remove("hidden");
+    el.completeWithFollowUp.textContent = "保存完成情况并创建下次跟进";
+    el.backfillFollowUp.classList.add("hidden");
+    el.cancelBackfillFollowUp.classList.add("hidden");
+    el.followUpSummary.classList.toggle("hidden", !nextTask);
+    el.addComment.classList.add("hidden");
+    if (!el.followUpDate.value) el.followUpDate.value = nextWeekSuggestion();
+    if (!el.followUpTitle.value) el.followUpTitle.value = task.title;
+    if (nextTask) {
+      el.followUpSummary.textContent = `这条事项已经接续过：${formatDate(nextTask.visibleFrom)} · ${followUpModeText[nextTask.followUpMode] || "我来跟进"} · ${nextTask.title}`;
+    } else {
+      el.followUpSummary.textContent = "";
+    }
+    return;
+  }
+
+  el.followUpComposer.classList.toggle("hidden", !isBackfill);
+  el.followUpNoteLabel.classList.add("hidden");
+  el.followUpGrid.classList.toggle("hidden", !isBackfill);
+  el.completeWithFollowUp.classList.toggle("hidden", !isBackfill);
+  el.completeWithFollowUp.textContent = "创建下次跟进";
+  el.addComment.classList.remove("hidden");
+  el.backfillFollowUp.classList.toggle("hidden", Boolean(nextTask) || isBackfill);
+  el.cancelBackfillFollowUp.classList.toggle("hidden", !isBackfill);
+  if (nextTask) {
+    el.followUpSectionTitle.textContent = "下次跟进";
+    el.followUpSectionHint.textContent = "这条事项已经收口，系统会在约定日期把下一步再送回来。";
+    el.followUpSummary.classList.remove("hidden");
+    el.followUpSummary.textContent = `${formatDate(nextTask.visibleFrom)} · ${followUpModeText[nextTask.followUpMode] || "我来跟进"} · ${nextTask.title}`;
+  } else if (sourceTask) {
+    el.followUpSectionTitle.textContent = "承接记录";
+    el.followUpSectionHint.textContent = "这条事项是从上一轮推进里接过来的。";
+    el.followUpSummary.classList.remove("hidden");
+    el.followUpSummary.textContent = `承接自「${sourceTask.title}」${task.visibleFrom ? ` · 原计划 ${formatDate(task.visibleFrom)}` : ""}`;
+  } else if (isBackfill) {
+    el.followUpSectionTitle.textContent = "补建下次跟进";
+    el.followUpSectionHint.textContent = "这条已完成事项需要继续盯时，在这里补一条后续动作。";
+    el.followUpSummary.classList.remove("hidden");
+    el.followUpSummary.textContent = "只创建后续事项，不会往完成备注里再追加重复评论。";
+    if (!el.followUpDate.value) el.followUpDate.value = nextWeekSuggestion();
+    if (!el.followUpTitle.value) el.followUpTitle.value = task.title;
+  } else {
+    el.followUpSectionTitle.textContent = "跟进链路";
+    el.followUpSectionHint.textContent = "这条事项已经完成，没有继续跟进。需要继续推进时，再单独补建一条后续。";
+    el.followUpSummary.classList.add("hidden");
+    el.followUpSummary.textContent = "";
+  }
+
+  if (!isBackfill) {
+    el.followUpTitle.value = "";
+    el.followUpDate.value = "";
+    el.followUpMode.value = "self";
+  }
+}
+
+function pushComment(task, text, createdAt = new Date().toISOString()) {
+  task.comments.push({
+    id: makeId("comment"),
+    text,
+    createdAt,
+    updatedAt: null,
+  });
+}
+
+function clearFollowUpComposer() {
+  el.newComment.value = "";
+  el.followUpTitle.value = "";
+  el.followUpDate.value = "";
+  el.followUpMode.value = "self";
+}
+
+function openBackfillFollowUp() {
+  const task = selectedTask();
+  if (!task || !task.completedAt || directFollowUpTask(task.id)) return;
+  state.backfillFollowUpId = task.id;
+  clearFollowUpComposer();
+  render();
+}
+
+function cancelBackfillFollowUp() {
+  state.backfillFollowUpId = null;
+  clearFollowUpComposer();
+  render();
+}
+
+function buildFollowUpNote(task, note, followUpMode) {
+  const lines = [];
+  lines.push(`接续自：${task.title}`);
+  if (followUpModeText[followUpMode]) lines.push(`跟进方式：${followUpModeText[followUpMode]}`);
+  if (note) lines.push(`上次收口：${note}`);
+  return lines.join("\n");
+}
+
+function buildFollowUpStats(reference = todayStart()) {
+  const week = weekRange(new Date(`${reference}T00:00:00`));
+  const pendingFollowUps = state.tasks.filter((task) => !task.completedAt && task.visibleFrom);
+  return {
+    today: pendingFollowUps.filter((task) => task.visibleFrom === reference).length,
+    thisWeek: pendingFollowUps.filter((task) => task.visibleFrom >= reference && task.visibleFrom <= week.end).length,
+    overdue: pendingFollowUps.filter((task) => task.visibleFrom < reference).length,
+  };
+}
+
+function directFollowUpTask(taskId) {
+  return state.tasks
+    .filter((task) => task.sourceTaskId === taskId)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))[0] || null;
+}
+
+function sourceTaskFor(task) {
+  if (!task.sourceTaskId) return null;
+  return state.tasks.find((item) => item.id === task.sourceTaskId) || null;
+}
+
+function tasksInThread(threadId) {
+  if (!threadId) return [];
+  return state.tasks
+    .filter((task) => (task.threadId || task.id) === threadId)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+}
+
+function renderFollowUpBadge(task) {
+  const text = followUpBadgeText(task);
+  if (!text) return null;
+  const badge = document.createElement("span");
+  badge.className = `summary-pill ${task.completedAt ? "success" : task.visibleFrom && task.visibleFrom < todayStart() ? "warn" : ""}`.trim();
+  badge.textContent = text;
+  return badge;
+}
+
+function followUpBadgeText(task) {
+  const nextTask = directFollowUpTask(task.id);
+  if (nextTask) return `已续办 ${formatDate(nextTask.visibleFrom)}`;
+  if (!task.completedAt && task.visibleFrom) {
+    if (task.visibleFrom < todayStart()) return `逾期 ${formatDate(task.visibleFrom)}`;
+    return `待跟进 ${formatDate(task.visibleFrom)}`;
+  }
+  return "";
+}
+
+function followUpMetaText(task) {
+  if (!task.completedAt && task.visibleFrom) {
+    return `${task.visibleFrom < todayStart() ? "已逾期" : "跟进"} ${formatDate(task.visibleFrom)}`;
+  }
+  const nextTask = directFollowUpTask(task.id);
+  if (nextTask) return `下次 ${formatDate(nextTask.visibleFrom)}`;
+  return "";
 }
 
 function buildFocusHistoryRows(sessions) {
@@ -984,6 +1294,10 @@ function renderReport() {
         const taskMinutes = taskSessions.reduce((sum, session) => sum + focusSessionMinutes(session), 0);
         lines.push(`- ${task.tag ? `【${task.tag}】` : ""}${task.title}${taskSessions.length ? `（${focusCount} 个番茄，${formatMinuteText(taskMinutes)}）` : ""}`);
         task.comments.forEach((comment) => lines.push(`  - ${formatDateTime(comment.createdAt)}：${comment.text}`));
+        const nextTask = directFollowUpTask(task.id);
+        if (nextTask) {
+          lines.push(`  - 下次跟进：${formatDate(nextTask.visibleFrom)} · ${followUpModeText[nextTask.followUpMode] || "我来跟进"} · ${nextTask.title}`);
+        }
       });
       lines.push("");
     });
@@ -1023,7 +1337,14 @@ function findOpenFocusSession() {
 }
 
 function matchesSearch(task) {
-  return [task.title, task.note, task.tag, ...task.comments.map((comment) => comment.text)]
+  return [
+    task.title,
+    task.note,
+    task.tag,
+    task.visibleFrom,
+    followUpModeText[task.followUpMode] || "",
+    ...task.comments.map((comment) => comment.text),
+  ]
     .filter(Boolean)
     .some((value) => value.toLowerCase().includes(state.search));
 }
@@ -1034,6 +1355,10 @@ function withinRange(iso, from, to) {
   if (from && date < new Date(`${from}T00:00:00`)) return false;
   if (to && date > new Date(`${to}T23:59:59`)) return false;
   return true;
+}
+
+function isTaskVisibleNow(task, reference = todayStart()) {
+  return !task.visibleFrom || task.visibleFrom <= reference;
 }
 
 function groupTasks(tasks, mode) {
@@ -1145,7 +1470,16 @@ function normalizeTask(task) {
     createdAt: task.createdAt || new Date().toISOString(),
     completedAt: task.completedAt || null,
     comments: Array.isArray(task.comments) ? task.comments.map(normalizeComment).filter(Boolean) : [],
+    threadId: task.threadId ? String(task.threadId) : String(task.id || makeId("thread")),
+    sourceTaskId: task.sourceTaskId ? String(task.sourceTaskId) : null,
+    visibleFrom: normalizeDateValue(task.visibleFrom),
+    followUpMode: task.followUpMode && followUpModeText[task.followUpMode] ? task.followUpMode : "",
   };
+}
+
+function normalizeDateValue(value) {
+  if (!value) return "";
+  return String(value).slice(0, 10);
 }
 
 function normalizePriority(priority) {
@@ -1237,7 +1571,38 @@ function todayEnd() {
 }
 
 function getSortDate(task) {
-  return task.completedAt || task.createdAt;
+  return task.completedAt || (task.visibleFrom ? `${task.visibleFrom}T00:00:00` : task.createdAt);
+}
+
+function compareActiveTasks(a, b) {
+  const today = todayStart();
+  const rank = (task) => {
+    if (task.visibleFrom && task.visibleFrom < today) return 0;
+    if (task.visibleFrom === today) return 1;
+    if (task.visibleFrom) return 2;
+    return 3;
+  };
+  const rankDiff = rank(a) - rank(b);
+  if (rankDiff !== 0) return rankDiff;
+  if (a.visibleFrom || b.visibleFrom) {
+    const left = a.visibleFrom || "9999-12-31";
+    const right = b.visibleFrom || "9999-12-31";
+    if (left !== right) return left.localeCompare(right);
+  }
+  return new Date(b.createdAt) - new Date(a.createdAt);
+}
+
+function nextWeekSuggestion() {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return toDateInputValue(date);
+}
+
+function formatDate(value) {
+  if (!value) return "未设";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function formatDateTime(value) {
@@ -1286,3 +1651,4 @@ function makeId(prefix) {
   const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
   return prefix ? `${prefix}_${id}` : id;
 }
+

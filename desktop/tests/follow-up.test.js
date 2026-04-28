@@ -1,0 +1,41 @@
+const fs = require("fs");
+const path = require("path");
+const assert = require("assert");
+
+const appJs = fs.readFileSync(path.join(__dirname, "..", "src", "renderer", "app.js"), "utf8");
+const indexHtml = fs.readFileSync(path.join(__dirname, "..", "src", "renderer", "index.html"), "utf8");
+const stylesCss = fs.readFileSync(path.join(__dirname, "..", "src", "renderer", "styles.css"), "utf8");
+
+assert.ok(appJs.includes("completeSelectedWithFollowUp"));
+assert.ok(appJs.includes("buildFollowUpStats"));
+assert.ok(appJs.includes("renderFollowUpSection"));
+assert.ok(appJs.includes("followUpModeText"));
+assert.ok(appJs.includes("visibleFrom"));
+assert.ok(appJs.includes("sourceTaskId"));
+assert.ok(appJs.includes("threadId"));
+assert.ok(appJs.includes("directFollowUpTask"));
+assert.ok(appJs.includes("isTaskVisibleNow"));
+assert.ok(appJs.includes("compareActiveTasks"));
+assert.ok(appJs.includes("下次跟进"));
+assert.ok(indexHtml.includes("followUpOverviewTitle"));
+assert.ok(indexHtml.includes("followUpTodayCount"));
+assert.ok(indexHtml.includes("followUpWeekCount"));
+assert.ok(indexHtml.includes("followUpOverdueCount"));
+assert.ok(indexHtml.includes("completeWithFollowUp"));
+assert.ok(indexHtml.includes("保存完成情况并创建下次跟进"));
+assert.ok(indexHtml.includes("本次完成情况"));
+assert.ok(indexHtml.includes("follow-up-submit-row"));
+assert.ok(indexHtml.includes("followUpDate"));
+assert.ok(indexHtml.includes("followUpMode"));
+assert.ok(indexHtml.includes("commentInput"));
+assert.ok(indexHtml.includes("backfillFollowUp"));
+assert.ok(stylesCss.includes(".follow-up-overview"));
+assert.ok(stylesCss.includes(".follow-up-block"));
+assert.ok(stylesCss.includes(".follow-up-grid"));
+assert.ok(stylesCss.includes(".follow-up-inline-actions"));
+assert.ok(stylesCss.includes(".follow-up-submit-row"));
+assert.ok(stylesCss.includes(".summary-pill"));
+assert.ok(appJs.includes("openBackfillFollowUp"));
+assert.ok(appJs.includes("commentInput"));
+
+console.log("OK: follow-up workflow, reminders, and linked task UI are wired.");

@@ -3,7 +3,7 @@ const path = require("path");
 const { createDataStore } = require("./data-store");
 const { createConfigStore } = require("./config-store");
 
-const APP_VERSION = "v0.5.0-achievements";
+const APP_VERSION = "v0.6.1-focus-toggle";
 
 let mainWindow;
 let store;
